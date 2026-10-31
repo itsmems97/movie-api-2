@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player - Pika Movies</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f0f13; color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* BACK */
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; position: sticky; top: 0; z-index: 50; background: #0f0f13; border-bottom: 1px solid #1e1e2a; }
+  .back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+  .topbar-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* PLAYER */
+  .player-wrap { width: 100%; background: #000; position: relative; padding-top: 56.25%; }
+  .player-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+  .player-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; background: #000; }
+  .spinner { width: 36px; height: 36px; border: 3px solid #222; border-top-color: #e63946; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* EPISODE SELECTOR */
+  .ep-section { padding: 14px 16px; }
+  .ep-label { font-size: 13px; color: #aaa; margin-bottom: 10px; }
+  .season-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 12px; }
+  .season-tabs::-webkit-scrollbar { display: none; }
+  .s-tab { flex-shrink: 0; background: #1a1a24; border: 1px solid #2a2a38; border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer; color: #aaa; }
+  .s-tab.active { background: #e63946; border-color: #e63946; color: #fff; font-weight: 600; }
+  .ep-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .ep-btn { background: #1a1a24; border: 1px solid #2a2a38; border-radius: 8px; padding: 10px 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #ccc; text-align: center; }
+  .ep-btn.active { background: #e63946; border-color: #e63946; color: #fff; }
+  .ep-btn:active { opacity: 0.7; }
+
+  /* INFO */
+  .info { padding: 16px; }
+  .info-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .info-meta { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .meta-tag { background: #1a1a24; border-radius: 4px; padding: 3px 8px; }
+  .imdb-tag { background: #f5c518; color: #000; border-radius: 4px; padding: 3px 8px; font-weight: 700; }
+  .info-desc { font-size: 13px; color: #999; line-height: 1.6; }
+  .info-desc.clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .more-btn { background: none; border: none; color: #e63946; font-size: 12px; cursor: pointer; margin-top: 6px; display: block; }
+
+  /* DUB SELECTOR */
+  .dub-section { padding: 0 16px 16px; }
+  .dub-label { font-size: 13px; color: #aaa; margin-bottom: 8px; }
+  .dub-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .dub-scroll::-webkit-scrollbar { display: none; }
+  .dub-btn { flex-shrink: 0; background: #1a1a24; border: 1px solid #2a2a38; border-radius: 16px; padding: 5px 12px; font-size: 11px; cursor: pointer; color: #aaa; }
+  .dub-btn.active { background: #e63946; border-color: #e63946; color: #fff; }
+
+  /* RECOMMENDED */
+  .rec-section { padding: 0 16px 80px; }
+  .rec-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .rec-title::before { content: ''; width: 3px; height: 15px; background: #e63946; border-radius: 2px; display: block; }
+  .rec-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px; }
+  .rec-scroll::-webkit-scrollbar { display: none; }
+  .rec-card { flex-shrink: 0; width: 100px; cursor: pointer; }
+  .rec-thumb { width: 100px; height: 140px; border-radius: 8px; overflow: hidden; background: #1a1a24; }
+  .rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .rec-name { font-size: 10px; color: #bbb; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .loading-page { display: flex; align-items: center; justify-content: center; height: 60vh; flex-direction: column; gap: 12px; color: #555; }
+  .error-page { text-align: center; padding: 60px 16px; color: #555; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="topbar-title" id="topTitle">Loading...</div>
+</div>
+
+<div id="mainContent">
+  <div class="loading-page"><div class="spinner"></div><span>Loading movie...</span></div>
+</div>
+
+<script>
+const API = 'https://pikamovie-api.duckdns.org/movie2';
+const params = new URLSearchParams(location.search);
+const detailPath = params.get('path');
+
+let movieData = null;
+let currentSe = 1;
+let currentEp = 1;
+let currentDetailPath = detailPath;
+let descExpanded = false;
+
+if (!detailPath) {
+  document.getElementById('mainContent').innerHTML = '<div class="error-page">❌ No movie path provided</div>';
+} else {
+  loadMovie(detailPath);
+}
+
+async function loadMovie(path) {
+  try {
+    const res = await fetch(`${API}/api/detail?detailPath=${encodeURIComponent(path)}`);
+    const json = await res.json();
+    if (json.code !== 0) throw new Error('API error');
+    movieData = json.data;
+    currentDetailPath = path;
+    render();
+    loadRec(movieData.subject.subjectId);
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = `<div class="error-page">⚠️ Failed to load movie<br><small>${e.message}</small></div>`;
+  }
+}
+
+function getIframeUrl(se, ep) {
+  // Series: videoPlayPage with season/ep params
+  const sub = movieData.subject;
+  if (sub.subjectType === 2) {
+    return `https://netnaija.film/videoPlayPage/${currentDetailPath}?type=/movie/detail&se=${se}&ep=${ep}`;
+  }
+  // Movie
+  return `https://netnaija.film/videoPlayPage/${currentDetailPath}?type=/movie/detail`;
+}
+
+function setPlayer(se, ep) {
+  currentSe = se;
+  currentEp = ep;
+  const url = getIframeUrl(se, ep);
+  const wrap = document.getElementById('playerWrap');
+  wrap.innerHTML = `
+    <div class="player-loading" id="pLoading"><div class="spinner"></div><span style="color:#666;font-size:13px">Loading player...</span></div>
+    <iframe src="${url}" allowfullscreen allow="autoplay; fullscreen" onload="document.getElementById('pLoading').style.display='none'"></iframe>`;
+  // Update ep buttons
+  document.querySelectorAll('.ep-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.ep) === ep && parseInt(b.dataset.se) === se);
+  });
+}
+
+function setSeason(se) {
+  currentSe = se;
+  document.querySelectorAll('.s-tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.se) === se));
+  renderEpGrid(se);
+  setPlayer(se, 1);
+}
+
+function renderEpGrid(se) {
+  const sub = movieData.subject;
+  const season = sub.resource?.seasons?.find(s => s.se === se);
+  const maxEp = season?.maxEp || 1;
+  let html = '';
+  for (let i = 1; i <= maxEp; i++) {
+    html += `<button class="ep-btn ${i === currentEp ? 'active' : ''}" data-se="${se}" data-ep="${i}" onclick="setPlayer(${se},${i})">${i}</button>`;
+  }
+  document.getElementById('epGrid').innerHTML = html;
+}
+
+function render() {
+  const sub = movieData.subject;
+  const isSeries = sub.subjectType === 2;
+  const seasons = sub.resource?.seasons || [];
+  const dubs = sub.dubs || [];
+
+  document.getElementById('topTitle').textContent = sub.title;
+  document.title = sub.title + ' - Pika Movies';
+
+  // Season tabs
+  let seasonTabsHtml = '';
+  if (isSeries && seasons.length > 0) {
+    seasons.forEach(s => {
+      seasonTabsHtml += `<div class="s-tab ${s.se === 1 ? 'active' : ''}" data-se="${s.se}" onclick="setSeason(${s.se})">Season ${s.se}</div>`;
+    });
+  }
+
+  // Ep grid placeholder
+  const firstSeason = seasons[0];
+  const maxEp = firstSeason?.maxEp || 1;
+  let epGridHtml = '';
+  for (let i = 1; i <= maxEp; i++) {
+    epGridHtml += `<button class="ep-btn ${i === 1 ? 'active' : ''}" data-se="1" data-ep="${i}" onclick="setPlayer(1,${i})">${i}</button>`;
+  }
+
+  // Dubs
+  let dubHtml = '';
+  if (dubs.length > 0) {
+    dubs.forEach(d => {
+      dubHtml += `<button class="dub-btn ${d.detailPath === currentDetailPath ? 'active' : ''}" onclick="switchDub('${d.detailPath}','${d.lanName}')">${d.lanName}</button>`;
+    });
+  }
+
+  const genres = sub.genre?.split(',').slice(0,3).map(g => `<span class="meta-tag">${g.trim()}</span>`).join('') || '';
+
+  document.getElementById('mainContent').innerHTML = `
+    <!-- PLAYER -->
+    <div class="player-wrap" id="playerWrap">
+      <div class="player-loading" id="pLoading"><div class="spinner"></div><span style="color:#666;font-size:13px">Loading player...</span></div>
+      <iframe src="${getIframeUrl(1,1)}" allowfullscreen allow="autoplay; fullscreen" onload="document.getElementById('pLoading').style.display='none'"></iframe>
+    </div>
+
+    <!-- EPISODE SELECTOR (series only) -->
+    ${isSeries && seasons.length > 0 ? `
+    <div class="ep-section">
+      <div class="ep-label">Season</div>
+      <div class="season-tabs">${seasonTabsHtml}</div>
+      <div class="ep-label">Episode</div>
+      <div class="ep-grid" id="epGrid">${epGridHtml}</div>
+    </div>` : ''}
+
+    <!-- DUB SELECTOR -->
+    ${dubs.length > 0 ? `
+    <div class="dub-section">
+      <div class="dub-label">Language / Dub</div>
+      <div class="dub-scroll">${dubHtml}</div>
+    </div>` : ''}
+
+    <!-- INFO -->
+    <div class="info">
+      <div class="info-title">${sub.title}</div>
+      <div class="info-meta">
+        ${sub.imdbRatingValue ? `<span class="imdb-tag">IMDb ${sub.imdbRatingValue}</span>` : ''}
+        ${sub.releaseDate ? `<span class="meta-tag">${sub.releaseDate.slice(0,4)}</span>` : ''}
+        ${sub.countryName ? `<span class="meta-tag">${sub.countryName}</span>` : ''}
+        ${genres}
+      </div>
+      ${sub.description ? `
+      <div class="info-desc clamped" id="descText">${sub.description}</div>
+      <button class="more-btn" id="moreBtn" onclick="toggleDesc()">Show more ▾</button>` : ''}
+    </div>
+
+    <!-- RECOMMENDED -->
+    <div class="rec-section">
+      <div class="rec-title">You May Also Like</div>
+      <div class="rec-scroll" id="recScroll"><div style="color:#555;font-size:13px">Loading...</div></div>
+    </div>
+  `;
+}
+
+function toggleDesc() {
+  descExpanded = !descExpanded;
+  document.getElementById('descText').classList.toggle('clamped', !descExpanded);
+  document.getElementById('moreBtn').textContent = descExpanded ? 'Show less ▴' : 'Show more ▾';
+}
+
+function switchDub(path, name) {
+  currentDetailPath = path;
+  document.querySelectorAll('.dub-btn').forEach(b => b.classList.toggle('active', b.textContent === name));
+  setPlayer(currentSe, currentEp);
+}
+
+async function loadRec(subjectId) {
+  try {
+    const res = await fetch(`${API}/api/rec?subjectId=${subjectId}&page=1&perPage=20`);
+    const json = await res.json();
+    const items = (json?.data?.items || []).filter(i => i.detailPath !== currentDetailPath);
+    if (!items.length) { document.getElementById('recScroll').innerHTML = ''; return; }
+    document.getElementById('recScroll').innerHTML = items.map(item => `
+      <div class="rec-card" onclick="loadMovie('${item.detailPath}');window.scrollTo(0,0)">
+        <div class="rec-thumb"><img src="${item.cover?.url || ''}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x140/1a1a24/555?text=?'"></div>
+        <div class="rec-name">${item.title}</div>
+      </div>`).join('');
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
