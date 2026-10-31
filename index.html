@@ -1,204 +1,796 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pika Movies</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0f0f13; color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PIKA - NETNINJA</title>
+    <style>
+        /* =========================================
+           CSS VARIABLES & GLOBAL RESET (iOS STYLE)
+           ========================================= */
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #1c1c1e;
+            --bg-tertiary: #2c2c2e;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --accent-color: #00a826;
+            --accent-hover: #007f1b;
+            --glass-bg: rgba(28, 28, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --blur: blur(20px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+        }
 
-  /* HEADER */
-  .header { background: #0f0f13; position: sticky; top: 0; z-index: 100; padding: 14px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e1e2a; }
-  .logo { font-size: 22px; font-weight: 700; color: #e63946; letter-spacing: -0.5px; flex-shrink: 0; }
-  .logo span { color: #fff; }
-  .search-wrap { flex: 1; position: relative; }
-  .search-wrap input { width: 100%; background: #1a1a24; border: 1px solid #2a2a38; border-radius: 24px; padding: 10px 44px 10px 16px; color: #fff; font-size: 14px; outline: none; }
-  .search-wrap input::placeholder { color: #666; }
-  .search-wrap input:focus { border-color: #e63946; }
-  .search-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #aaa; font-size: 16px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  /* HERO */
-  .hero { position: relative; height: 220px; overflow: hidden; background: #1a1a24; }
-  .hero-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
-  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, #0f0f13 30%, transparent); display: flex; align-items: flex-end; padding: 16px; }
-  .hero-info { }
-  .hero-badge { background: #e63946; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 6px; }
-  .hero-title { font-size: 20px; font-weight: 700; line-height: 1.2; }
-  .hero-meta { font-size: 12px; color: #aaa; margin-top: 4px; }
-  .hero-play { margin-top: 10px; background: #e63946; border: none; color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: var(--safe-area-bottom);
+        }
 
-  /* SECTION */
-  .section { padding: 20px 16px 0; }
-  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .section-title::before { content: ''; width: 3px; height: 16px; background: #e63946; border-radius: 2px; display: block; }
+        /* Scrollbar Hide */
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; }
 
-  /* CARDS SCROLL */
-  .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none; }
-  .cards-scroll::-webkit-scrollbar { display: none; }
+        /* SVG Icon Base */
+        .icon { width: 24px; height: 24px; fill: currentColor; display: inline-block; vertical-align: middle; }
+        .icon-sm { width: 18px; height: 18px; }
+        .icon-lg { width: 32px; height: 32px; }
 
-  /* CARD */
-  .card { flex-shrink: 0; width: 120px; cursor: pointer; }
-  .card-thumb { width: 120px; height: 170px; border-radius: 10px; overflow: hidden; background: #1a1a24; position: relative; }
-  .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
-  .card:active .card-thumb img { transform: scale(1.04); }
-  .card-corner { position: absolute; top: 6px; right: 6px; background: #e63946; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-  .card-imdb { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.7); font-size: 9px; padding: 2px 5px; border-radius: 3px; color: #f5c518; }
-  .card-title { font-size: 11px; color: #ccc; margin-top: 7px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-fade { animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+        .animate-slide { animation: slideUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
 
-  /* SEARCH RESULTS */
-  .results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px; }
-  .results-grid .card { width: 100%; }
-  .results-grid .card-thumb { width: 100%; }
+        /* =========================================
+           HEADER & SEARCH
+           ========================================= */
+        header {
+            position: fixed;
+            top: 0; width: 100%; height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            transition: background 0.3s;
+        }
+        header.scrolled { background: var(--bg-secondary); border-bottom: 1px solid var(--glass-border); }
+        
+        .logo { font-size: 22px; font-weight: 900; color: var(--accent-color); letter-spacing: -0.5px; }
+        
+        .search-container { position: relative; flex: 1; margin: 0 15px; max-width: 400px; }
+        .search-input {
+            width: 100%; height: 36px; background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border); border-radius: 10px;
+            padding: 0 12px 0 36px; color: white; font-size: 15px; outline: none;
+            transition: all 0.3s;
+        }
+        .search-input:focus { border-color: var(--accent-color); background: var(--bg-secondary); }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
 
-  /* LOADING */
-  .loading { text-align: center; padding: 40px; color: #555; font-size: 14px; }
-  .spinner { width: 32px; height: 32px; border: 3px solid #222; border-top-color: #e63946; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+        /* Search Suggestions Dropdown */
+        #search-suggestions {
+            position: absolute; top: 45px; left: 0; width: 100%;
+            background: var(--glass-bg); backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            max-height: 300px; overflow-y: auto; display: none; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 200;
+        }
+        .suggestion-item {
+            display: flex; align-items: center; padding: 10px;
+            border-bottom: 1px solid var(--glass-border); cursor: pointer;
+            transition: background 0.2s;
+        }
+        .suggestion-item:hover { background: rgba(255,255,255,0.1); }
+        .suggestion-img { width: 35px; height: 50px; border-radius: 6px; object-fit: cover; margin-right: 12px; background: var(--bg-tertiary); }
+        .suggestion-title { font-size: 14px; font-weight: 500; }
 
-  /* EMPTY */
-  .empty { text-align: center; padding: 60px 16px; color: #555; }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        /* =========================================
+           HOME PAGE UI
+           ========================================= */
+        #home-view { display: block; }
+        
+        /* Hero Banner */
+        .hero {
+            position: relative; height: 60vh; width: 100%;
+            background-size: cover; background-position: center;
+            display: flex; align-items: flex-end; padding: 20px;
+            background-color: var(--bg-secondary);
+        }
+        .hero::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, var(--bg-primary) 5%, transparent 60%, rgba(0,0,0,0.4) 100%);
+            z-index: 1;
+        }
+        .hero-content { position: relative; z-index: 10; width: 100%; text-align: center; }
+        .hero-title { font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .hero-meta { font-size: 13px; color: #ccc; margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; align-items: center; }
+        .hero-play-btn {
+            background: white; color: black; border: none; padding: 12px 30px;
+            border-radius: 30px; font-size: 16px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .hero-play-btn:active { transform: scale(0.95); }
 
-  /* NAV */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0f0f13; border-top: 1px solid #1e1e2a; display: flex; z-index: 100; }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0 12px; cursor: pointer; font-size: 10px; color: #555; gap: 4px; }
-  .nav-item.active { color: #e63946; }
-  .nav-icon { font-size: 20px; }
+        /* Category Rows */
+        .category-container { margin-top: 20px; padding: 0 16px; }
+        .category-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .movies-row {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
+        }
+        .movie-card {
+            flex: 0 0 110px; scroll-snap-align: start; cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .movie-card:active { transform: scale(0.95); }
+        .movie-poster {
+            width: 100%; height: 165px; border-radius: 8px; object-fit: cover;
+            background: var(--bg-tertiary); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .movie-title { font-size: 12px; margin-top: 6px; color: #ddd; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .page { display: none; padding-bottom: 70px; }
-  .page.active { display: block; }
-</style>
+        /* Loader */
+        .loader-container { display: flex; justify-content: center; padding: 20px; }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* =========================================
+           CUSTOM VIDEO PLAYER (FULLSCREEN)
+           ========================================= */
+        #player-view {
+            position: fixed; inset: 0; background: #000; z-index: 1000;
+            display: none; flex-direction: column;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        .video-wrapper { position: relative; width: 100%; flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: contain; transition: transform 0.1s; }
+        
+        /* Player Controls Overlay */
+        .player-controls {
+            position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 30%, transparent 70%, rgba(0,0,0,0.8));
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 20px; opacity: 1; transition: opacity 0.3s;
+        }
+        .player-controls.hidden { opacity: 0; pointer-events: none; }
+        
+        .top-controls { display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { background: none; border: none; color: white; cursor: pointer; padding: 10px; }
+        .player-title { font-size: 16px; font-weight: 600; color: white; }
+        
+        .center-controls { display: flex; justify-content: center; align-items: center; gap: 40px; }
+        .play-pause-btn { background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: white; backdrop-filter: blur(10px); }
+        .skip-btn { background: none; border: none; color: white; cursor: pointer; }
+        
+        .bottom-controls { display: flex; flex-direction: column; gap: 15px; }
+        .progress-bar-container { width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: var(--accent-color); width: 0%; border-radius: 2px; position: relative; }
+        .progress-knob { width: 12px; height: 12px; background: white; border-radius: 50%; position: absolute; right: -6px; top: -4px; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        
+        .action-buttons { display: flex; justify-content: space-between; align-items: center; }
+        .action-group { display: flex; gap: 20px; align-items: center; }
+        .action-btn { background: none; border: none; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
+        .action-btn .icon { width: 22px; height: 22px; }
+        
+        /* Gestures HUD */
+        .gesture-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 15px 25px; border-radius: 15px; color: white; font-size: 20px; font-weight: bold; display: none; flex-direction: column; align-items: center; gap: 10px; }
+        
+        /* Bottom Sheet (Episodes/Suggestions) */
+        .player-bottom-sheet {
+            background: var(--bg-secondary); border-radius: 20px 20px 0 0;
+            padding: 20px; max-height: 40vh; overflow-y: auto;
+            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .player-bottom-sheet.open { transform: translateY(0); }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sheet-title { font-size: 18px; font-weight: 700; }
+        
+        .episodes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+        .ep-btn { background: var(--bg-tertiary); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center; transition: background 0.2s; }
+        .ep-btn.active { background: var(--accent-color); border-color: var(--accent-color); }
+        
+        /* Suggestions List in Player */
+        .suggestions-list { display: flex; gap: 10px; overflow-x: auto; }
+        .suggestion-card { flex: 0 0 100px; cursor: pointer; }
+        .suggestion-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
+        .suggestion-card p { font-size: 12px; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">Pika<span>Movies</span></div>
-  <div class="search-wrap">
-    <input type="text" id="searchInput" placeholder="Search movies, series..." />
-    <button class="search-btn" onclick="doSearch()">🔍</button>
-  </div>
-</div>
+    <!-- ==================== SVG ICON LIBRARY ==================== -->
+    <svg style="display: none;">
+        <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+        <symbol id="i-forward" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></symbol>
+        <symbol id="i-volume" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></symbol>
+        <symbol id="i-mute" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></symbol>
+        <symbol id="i-fullscreen" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></symbol>
+        <symbol id="i-subtitles" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 12h4v2H4v-2zm10 6H4v-2h10v2zm6 0h-4v-2h4v2zm0-4H10v-2h10v2z"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+    </svg>
 
-<!-- HOME PAGE -->
-<div class="page active" id="page-home">
-  <div class="hero" id="heroSection" style="display:none">
-    <img class="hero-img" id="heroImg" src="" alt="">
-    <div class="hero-overlay">
-      <div class="hero-info">
-        <div class="hero-badge" id="heroBadge">New</div>
-        <div class="hero-title" id="heroTitle"></div>
-        <div class="hero-meta" id="heroMeta"></div>
-        <button class="hero-play" id="heroPlay">▶ Watch Now</button>
-      </div>
+    <!-- ==================== HEADER ==================== -->
+    <header id="main-header">
+        <div class="logo">PIKA NETNINJA</div>
+        <div class="search-container">
+            <svg class="icon icon-sm search-icon"><use href="#i-search"></use></svg>
+            <input type="text" class="search-input" id="search-input" placeholder="Search movies, series..." autocomplete="off">
+            <!-- Suggestions Dropdown -->
+            <div id="search-suggestions"></div>
+        </div>
+    </header>
+
+    <!-- ==================== HOME PAGE VIEW ==================== -->
+    <main id="home-view">
+        <!-- Hero Banner -->
+        <div class="hero" id="hero-banner">
+            <img id="hero-bg-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0;" referrerpolicy="no-referrer" src="" onerror="this.src='https://via.placeholder.com/800x600/101114/00a826?text=PIKA+NETNINJA'">
+            <div class="hero-content" style="z-index: 10;">
+                <h1 class="hero-title" id="hero-title">Loading...</h1>
+                <div class="hero-meta" id="hero-meta">
+                    <span>2026</span> | <span>Action</span> | <span>IMDb 8.5</span>
+                </div>
+                <button class="hero-play-btn">
+                    <svg class="icon"><use href="#i-play"></use></svg> Watch Now
+                </button>
+            </div>
+        </div>
+        
+        <!-- Categories will load here -->
+        <div id="home-categories"></div>
+        
+        <!-- Infinite Scroll Loader -->
+        <div class="loader-container" id="home-loader">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <!-- ==================== CUSTOM VIDEO PLAYER ==================== -->
+    <div id="player-view">
+        <div class="video-wrapper" id="gesture-area">
+            <!-- Main Video Tag -->
+            <video id="main-video" playsinline>
+                <track kind="subtitles" src="" srclang="en" label="English" id="subtitle-track">
+            </video>
+            
+            <!-- Gesture HUD -->
+            <div class="gesture-hud" id="gesture-hud">
+                <svg class="icon icon-lg"><use href="#i-volume"></use></svg>
+                <span id="gesture-text">Volume 50%</span>
+            </div>
+
+            <!-- Player Controls -->
+            <div class="player-controls" id="player-controls">
+                <!-- Top Controls -->
+                <div class="top-controls">
+                    <button class="back-btn" onclick="closePlayerView()">
+                        <svg class="icon icon-lg"><use href="#i-back"></use></svg>
+                    </button>
+                    <div class="player-title" id="player-title">Movie Title</div>
+                    <div style="width: 40px;"></div> <!-- Spacer -->
+                </div>
+
+                <!-- Center Controls -->
+                <div class="center-controls">
+                    <button class="skip-btn" onclick="seekVideo(-10)">
+                        <svg class="icon icon-lg"><use href="#i-forward" style="transform: rotate(180deg);"></use></svg>
+                    </button>
+                    <button class="play-pause-btn" id="play-pause-btn" onclick="togglePlay()">
+                        <svg class="icon icon-lg"><use href="#i-play" id="play-icon"></use></svg>
+                    </button>
+                    <button class="skip-btn" onclick="seekVideo(10)">
+                        <svg class="icon icon-lg"><use href="#i-forward"></use></svg>
+                    </button>
+                </div>
+
+                <!-- Bottom Controls -->
+                <div class="bottom-controls">
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-container" id="progress-container" onclick="seekTo(event)">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="progress-knob"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <div class="action-group">
+                            <button class="action-btn" onclick="toggleMute()">
+                                <svg class="icon"><use href="#i-volume" id="volume-icon"></use></svg>
+                            </button>
+                            <span id="time-display" style="font-size: 12px;">00:00 / 00:00</span>
+                        </div>
+                        <div class="action-group">
+                            <button class="action-btn" onclick="toggleSubtitles()">
+                                <svg class="icon"><use href="#i-subtitles"></use></svg>
+                            </button>
+                            <button class="action-btn" onclick="downloadVideo()">
+                                <svg class="icon"><use href="#i-download"></use></svg>
+                            </button>
+                            <button class="action-btn" onclick="toggleFullscreen()">
+                                <svg class="icon"><use href="#i-fullscreen"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Sheet (Episodes / Suggestions) -->
+        <div class="player-bottom-sheet" id="player-bottom-sheet">
+            <div class="sheet-header">
+                <div class="sheet-title" id="sheet-title">Episodes</div>
+                <button class="action-btn" onclick="toggleBottomSheet()">
+                    <svg class="icon"><use href="#i-close"></use></svg>
+                </button>
+            </div>
+            
+            <!-- Episodes Container -->
+            <div class="episodes-grid" id="episodes-container"></div>
+            
+            <!-- Suggestions Container (Hidden by default) -->
+            <div class="suggestions-list" id="suggestions-container" style="display: none;"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="section">
-    <div class="section-title">Recommended</div>
-    <div class="cards-scroll" id="recCards">
-      <div class="loading"><div class="spinner"></div>Loading...</div>
-    </div>
-  </div>
-</div>
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // --- CONFIGURATION ---
+        const API_BASE = "http://193.122.76.131:5001/api";
+        const video = document.getElementById('main-video');
+        const playerView = document.getElementById('player-view');
+        const controls = document.getElementById('player-controls');
+        let controlsTimeout;
 
-<!-- SEARCH PAGE -->
-<div class="page" id="page-search">
-  <div class="section" style="padding-top:16px">
-    <div class="section-title" id="searchTitle">Results</div>
-  </div>
-  <div class="results-grid" id="searchResults">
-    <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Searching...</div>
-  </div>
-</div>
+        // --- HEADER SCROLL EFFECT ---
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <div class="nav-item active" id="nav-home" onclick="showPage('home')">
-    <div class="nav-icon">🏠</div>Home
-  </div>
-  <div class="nav-item" id="nav-search" onclick="focusSearch()">
-    <div class="nav-icon">🔍</div>Search
-  </div>
-</div>
+        // --- 1. FETCH HOMEPAGE DATA ---
+        async function loadHomepage() {
+            try {
+                const res = await fetch(`${API_BASE}/home`);
+                const json = await res.json();
+                const data = json.data;
+                
+                // Render Hero Banner with Auto-Slide
+if (data.operatingList) {
+    const bannerOp = data.operatingList.find(op => op.type === "BANNER");
+    const items = bannerOp?.banner?.items || bannerOp?.subjects || [];
+    
+    if (items.length > 0) {
+        let currentIndex = 0;
 
-<script>
-const API = 'https://pikamovie-api.duckdns.org/movie2';
-// Seed subjectId for home recommendations
-const SEED_ID = '6164881272604084120';
+        function updateHeroBanner() {
+            const item = items[currentIndex];
+            const sub = item.subject || item; // Banner data subject ke andar hota hai
+            
+            let imgUrl = sub.cover?.url || sub.coverUrl || sub.image || item.cover?.url || '';
+            if (!imgUrl) {
+                const firstMovie = data.operatingList.find(op => op.subjects && op.subjects.length > 0)?.subjects[0];
+                if (firstMovie) imgUrl = firstMovie.cover?.url || firstMovie.image;
+            }
+            
+            if (imgUrl) {
+                document.getElementById('hero-bg-img').src = `${API_BASE}/proxy?url=${encodeURIComponent(imgUrl)}`;
+            } else {
+                document.getElementById('hero-bg-img').src = 'https://via.placeholder.com/800x600/101114/00a826?text=PIKA+NETNINJA';
+            }
 
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
+            document.getElementById('hero-title').innerText = sub.title || item.title || "Unknown";
+            document.getElementById('hero-meta').innerHTML = `<span>${sub.releaseDate || '2026'}</span> | <span>${sub.genre || 'Action'}</span> | <span>IMDb ${sub.imdbRatingValue || '8.0'}</span>`;
+            
+            const playBtn = document.querySelector('.hero-play-btn');
+            playBtn.onclick = () => fetchMovieDetail(sub.detailPath || item.detailPath, sub.title || item.title);
+        }
+
+        updateHeroBanner(); // Initial Load
+
+        // Auto slide every 5 seconds
+        setInterval(() => {
+            currentIndex = (currentIndex + 1) % items.length;
+            updateHeroBanner();
+        }, 5000);
+    }
 }
 
-function focusSearch() {
-  showPage('search');
-  document.getElementById('nav-search').classList.add('active');
-  document.getElementById('nav-home').classList.remove('active');
-  document.getElementById('searchInput').focus();
+                // Render Categories
+                const catContainer = document.getElementById('home-categories');
+                catContainer.innerHTML = "";
+                
+                data.operatingList.forEach(op => {
+                    if (op.subjects && op.subjects.length > 0) {
+                        const row = document.createElement('div');
+                        row.className = 'category-container animate-fade';
+                        
+                        let html = `<div class="category-title">${op.title}</div><div class="movies-row">`;
+                        
+                        op.subjects.forEach(movie => {
+                            const detailPath = movie.detailPath || movie.subjectId;
+                            html += `
+                                <div class="movie-card" onclick="fetchMovieDetail('${detailPath}', '${movie.title}')">
+                                    <img src="${API_BASE}/proxy?url=${encodeURIComponent(movie.cover?.url || movie.image)}" class="movie-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/110x165/1c1c1e/8e8e93?text=No+Img'">
+                                    <div class="movie-title">${movie.title}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += `</div>`;
+                        row.innerHTML = html;
+                        catContainer.appendChild(row);
+                    }
+                });
+                document.getElementById('home-loader').style.display = 'none';
+            } catch (err) {
+                console.error("Homepage Error:", err);
+                document.getElementById('home-loader').innerHTML = "Failed to load data.";
+            }
+        }
+
+        // --- 2. SEARCH WITH SUGGESTIONS ---
+        const searchInput = document.getElementById('search-input');
+        const searchSuggestions = document.getElementById('search-suggestions');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                searchSuggestions.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
+                    const json = await res.json();
+                    const items = json.data?.items || [];
+
+                    searchSuggestions.innerHTML = "";
+                    
+                    if (items.length === 0) {
+                        searchSuggestions.innerHTML = `<div style="padding: 15px; color: #888; text-align: center;">No results found</div>`;
+                    } else {
+                        items.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `
+                                <img src="${API_BASE}/proxy?url=${encodeURIComponent(item.cover?.url || item.image)}" class="suggestion-img">
+                                <div class="suggestion-title">${item.title}</div>
+                            `;
+                            div.onclick = () => {
+                                searchSuggestions.style.display = 'none';
+                                searchInput.value = "";
+                                fetchMovieDetail(item.detailPath, item.title);
+                            };
+                            searchSuggestions.appendChild(div);
+                        });
+                    }
+                    searchSuggestions.style.display = 'flex';
+                } catch (err) {
+                    console.error("Search Error:", err);
+                }
+            }, 400); // Debounce
+        });
+
+        // Close suggestions on outside click
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+
+        // --- 3. FETCH MOVIE DETAILS & OPEN PLAYER ---
+async function fetchMovieDetail(detailPath, title) {
+    playerView.style.display = 'flex';
+    document.getElementById('player-title').innerText = title;
+    
+    try {
+        const res = await fetch(`${API_BASE}/detail?detailPath=${detailPath}`);
+        const json = await res.json();
+        const data = json.data;
+        
+        let isSeries = false;
+        let firstSeason = 1;
+        if (data && data.resource && data.resource.seasons && data.resource.seasons.length > 0) {
+            // Check karein ke koi asli season (se > 0) mojood hai ya nahi
+            const validSeason = data.resource.seasons.find(s => s.se > 0);
+            if (validSeason) {
+                isSeries = true;
+                firstSeason = validSeason.se;
+            }
+        }
+
+        if (isSeries) {
+            renderEpisodes(data.resource.seasons, data.subject.subjectId, detailPath);
+            playEpisode(data.subject.subjectId, firstSeason, 1, detailPath, '/tv-series/detail');
+            document.getElementById('sheet-title').innerText = "Seasons & Episodes";
+            toggleBottomSheet();
+        } else if (data && data.subject) {
+            document.getElementById('episodes-container').innerHTML = "<div style='color:#888;padding:20px;text-align:center;'>This is a Movie. Enjoy!</div>";
+            document.getElementById('sheet-title').innerText = "Movie Info";
+            toggleBottomSheet();
+            playEpisode(data.subject.subjectId, 0, 0, detailPath, '/movie/detail');
+        } else {
+            alert("Detail API Error: " + JSON.stringify(json).substring(0, 150));
+        }
+    } catch (err) {
+        console.error("Detail Error:", err);
+        alert("Detail Fetch Error. CORS issue.");
+        closePlayerView();
+    }
 }
 
-function goPlayer(detailPath) {
-  window.location.href = 'player.html?path=' + encodeURIComponent(detailPath);
+        // --- 4. RENDER EPISODES ---
+        function renderEpisodes(seasons, subjectId, detailPath) {
+            const epContainer = document.getElementById('episodes-container');
+            epContainer.innerHTML = "";
+            
+            seasons.forEach(season => {
+                const seHead = document.createElement('div');
+                seHead.style.gridColumn = "1 / -1";
+                seHead.style.marginTop = "10px";
+                seHead.style.fontWeight = "bold";
+                seHead.style.color = "var(--accent-color)";
+                seHead.innerText = `Season ${season.se}`;
+                epContainer.appendChild(seHead);
+
+                for (let i = 1; i <= season.maxEp; i++) {
+                    const btn = document.createElement('div');
+                    btn.className = 'ep-btn';
+                    btn.innerText = `EP ${i}`;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        playEpisode(subjectId, season.se, i, detailPath);
+                    };
+                    epContainer.appendChild(btn);
+                }
+            });
+        }
+
+        // --- 5. PLAY EPISODE (FETCH STREAM) ---
+async function playEpisode(subjectId, se, ep, detailPath, mediaType) {
+    try {
+        const safeSe = parseInt(se) || 0;
+        const safeEp = parseInt(ep) || 0;
+        
+        // Agar mediaType pass hua hai toh wohi use karein
+        let typeStr = mediaType || ((safeSe > 0 || safeEp > 0) ? '/tv-series/detail' : '/movie/detail');
+
+        const res = await fetch(`${API_BASE}/play?subjectId=${subjectId}&se=${safeSe}&ep=${safeEp}&detailPath=${detailPath}&type=${encodeURIComponent(typeStr)}`);
+        const json = await res.json();
+        
+        // Agar streams nahi mile
+        if (!json.data || !json.data.streams || json.data.streams.length === 0) {
+            alert("Video not available. (Server: " + (json.data?.hasResource ? "Has resource but no streams" : "No resource found") + ")");
+            return;
+        }
+
+        const streams = json.data.streams;
+        // Sort by resolution to get 1080p
+        streams.sort((a, b) => parseInt(b.resolutions) - parseInt(a.resolutions));
+        const bestStream = streams[0];
+        
+        video.src = `${API_BASE}/proxy?url=${encodeURIComponent(bestStream.url)}`;
+video.play().catch(e => { console.log("Play Error:", e); });
+        updatePlayIcon(true);
+        
+        if (json.data?.captions && json.data.captions.length > 0) {
+            document.getElementById('subtitle-track').src = json.data.captions[0].url;
+        }
+    } catch (err) {
+        console.error("Play Error:", err);
+        alert("Network Error: " + err.message);
+    }
 }
 
-function cardHTML(item) {
-  const cover = item.cover?.url || '';
-  const corner = item.corner ? `<div class="card-corner">${item.corner}</div>` : '';
-  const imdb = item.imdbRatingValue ? `<div class="card-imdb">⭐ ${item.imdbRatingValue}</div>` : '';
-  return `
-    <div class="card" onclick="goPlayer('${item.detailPath}')">
-      <div class="card-thumb">
-        <img src="${cover}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/120x170/1a1a24/555?text=No+Image'">
-        ${corner}${imdb}
-      </div>
-      <div class="card-title">${item.title}</div>
-    </div>`;
-}
+        // --- 6. CUSTOM PLAYER CONTROLS & GESTURES ---
+        
+        function showControls() {
+            controls.classList.remove('hidden');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                if (!video.paused) controls.classList.add('hidden');
+            }, 3000);
+        }
 
-// Load home recommendations
-async function loadHome() {
-  try {
-    const res = await fetch(`${API}/api/rec?subjectId=${SEED_ID}&page=1&perPage=24`);
-    const json = await res.json();
-    const items = json?.data?.items || [];
-    if (!items.length) { document.getElementById('recCards').innerHTML = '<div class="empty"><div class="empty-icon">🎬</div>Nothing found</div>'; return; }
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                updatePlayIcon(true);
+            } else {
+                video.pause();
+                updatePlayIcon(false);
+            }
+            showControls();
+        }
 
-    // Hero — first item
-    const hero = items[0];
-    document.getElementById('heroImg').src = hero.cover?.url || '';
-    document.getElementById('heroTitle').textContent = hero.title;
-    document.getElementById('heroMeta').textContent = [hero.genre?.split(',')[0], hero.countryName, hero.releaseDate?.slice(0,4)].filter(Boolean).join(' · ');
-    document.getElementById('heroBadge').textContent = hero.corner || 'Featured';
-    document.getElementById('heroPlay').onclick = () => goPlayer(hero.detailPath);
-    document.getElementById('heroSection').style.display = '';
+        function updatePlayIcon(isPlaying) {
+            const iconUse = document.getElementById('play-icon');
+            iconUse.setAttribute('href', isPlaying ? '#i-pause' : '#i-play');
+        }
 
-    document.getElementById('recCards').innerHTML = items.map(cardHTML).join('');
-  } catch(e) {
-    document.getElementById('recCards').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Failed to load</div>';
-  }
-}
+        function seekVideo(seconds) {
+            video.currentTime += seconds;
+            showControls();
+        }
 
-// Search via netnaija
-function doSearch() {
-  const kw = document.getElementById('searchInput').value.trim();
-  if (!kw) return;
-  showPage('search');
-  document.getElementById('nav-search').classList.add('active');
-  document.getElementById('nav-home').classList.remove('active');
-  document.getElementById('searchTitle').textContent = `Results for "${kw}"`;
-  document.getElementById('searchResults').innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Searching...</div>';
-  // Redirect to netnaija search — results open in player
-  window.open(`https://netnaija.film/search-results?kw=${encodeURIComponent(kw)}`, '_blank');
-  document.getElementById('searchResults').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔗</div>Search opened in browser.<br><small style="color:#666">Tap a result there, copy the detailPath, then come back.</small></div>';
-}
+        video.addEventListener('timeupdate', () => {
+            const percent = (video.currentTime / video.duration) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('time-display').innerText = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+        });
 
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+        function formatTime(secs) {
+            if (isNaN(secs)) return "00:00";
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
 
-loadHome();
-</script>
+        function seekTo(e) {
+            const bar = document.getElementById('progress-container');
+            const rect = bar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            video.currentTime = percent * video.duration;
+            showControls();
+        }
+
+        function toggleMute() {
+            video.muted = !video.muted;
+            document.getElementById('volume-icon').setAttribute('href', video.muted ? '#i-mute' : '#i-volume');
+            showControls();
+        }
+
+        function toggleSubtitles() {
+            const track = video.textTracks[0];
+            if (track) {
+                track.mode = track.mode === 'showing' ? 'hidden' : 'showing';
+            }
+            showControls();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                playerView.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+            showControls();
+        }
+
+        function downloadVideo() {
+            if (video.src) {
+                const a = document.createElement('a');
+                a.href = video.src;
+                a.download = "PIKA_NETNINJA_Video.mp4";
+                a.target = "_blank";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        function toggleBottomSheet() {
+            const sheet = document.getElementById('player-bottom-sheet');
+            sheet.classList.toggle('open');
+            showControls();
+        }
+
+        function closePlayerView() {
+            playerView.style.display = 'none';
+            video.pause();
+            video.src = "";
+        }
+
+        // --- 7. GESTURE CONTROLS (Touch) ---
+        const gestureArea = document.getElementById('gesture-area');
+        const hud = document.getElementById('gesture-hud');
+        const hudText = document.getElementById('gesture-text');
+        
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwiping = false;
+        let initialVolume = 1;
+
+        gestureArea.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = false;
+            initialVolume = video.volume;
+            
+            controlsTimeout = setTimeout(() => {
+                if (!isSwiping) togglePlay();
+            }, 250);
+        });
+
+        gestureArea.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) return;
+            
+            const deltaX = e.touches[0].clientX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+            
+            if (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20) {
+                isSwiping = true;
+                clearTimeout(controlsTimeout);
+                hud.style.display = 'flex';
+                
+                const screenWidth = window.innerWidth;
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal Swipe (Seek)
+                    hud.innerHTML = `<svg class="icon icon-lg"><use href="#i-forward"></use></svg>`;
+                    const seekAmount = (deltaX / screenWidth) * 120;
+                    hudText.innerText = `${seekAmount > 0 ? '+' : ''}${Math.round(seekAmount)}s`;
+                    
+                    if (Math.abs(deltaX) > 100) {
+                        video.currentTime += seekAmount;
+                        touchStartX = e.touches[0].clientX;
+                    }
+                } else {
+                    // Vertical Swipe (Volume/Brightness)
+                    const deltaYPercent = (touchStartY - e.touches[0].clientY) / screenWidth;
+                    const isRightSide = touchStartX > screenWidth / 2;
+                    
+                    if (isRightSide) {
+                        let newVol = Math.min(1, Math.max(0, initialVolume + deltaYPercent * 2));
+                        video.volume = newVol;
+                        hud.innerHTML = `<svg class="icon icon-lg"><use href="${newVol > 0 ? '#i-volume' : '#i-mute'}"></use></svg>`;
+                        hudText.innerText = `Volume ${Math.round(newVol * 100)}%`;
+                    } else {
+                        let newBright = Math.min(1.5, Math.max(0.2, 1 + deltaYPercent * 2));
+                        video.style.filter = `brightness(${newBright})`;
+                        hud.innerHTML = `<svg class="icon icon-lg"><use href="#i-settings"></use></svg>`;
+                        hudText.innerText = `Brightness ${Math.round(newBright * 100)}%`;
+                    }
+                }
+            }
+        });
+
+        gestureArea.addEventListener('touchend', () => {
+            clearTimeout(controlsTimeout);
+            setTimeout(() => { hud.style.display = 'none'; }, 500);
+            showControls();
+        });
+
+        let lastTap = 0;
+        gestureArea.addEventListener('touchend', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0 && !isSwiping) {
+                toggleFullscreen();
+            }
+            lastTap = currentTime;
+        });
+
+        // Initialize App
+        loadHomepage();
+
+    </script>
 </body>
 </html>
