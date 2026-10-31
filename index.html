@@ -178,7 +178,6 @@ body.menu #scrim{opacity:1;pointer-events:auto}
 *,button,input{font-family:VIP,-apple-system,"SF Pro Text",Roboto,sans-serif}
 :root{--cr:36px;--gl:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05))}
 body{background:transparent}
-#frame{position:fixed;inset:0;z-index:9000;pointer-events:none;border-radius:var(--cr);box-shadow:0 0 0 60px #000}
 #amb,#pamb{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#05070d}
 #pamb{position:absolute;z-index:0}
 #amb::after,#pamb::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.55))}
@@ -273,11 +272,44 @@ header::before{backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-mask-im
 #kbd .kw{flex:1.6}#kbd .kx{flex:1.5}#kbd .ksp{flex:5;font-size:15px;color:rgba(255,255,255,.7)}
 #kbd .kg{flex:2.6;background:var(--g);color:#00210c;font-size:16px;font-weight:700}#kbd .kg.p{background:#7be495}
 #kbd .i{width:22px;height:22px}
+
+/* ===== v6: safe areas, no black strips, iOS-style back pills, side-menu edge blur, black landscape, PiP background ===== */
+html{background:#05070d;min-height:100%}
+body{min-height:100vh;min-height:100lvh}
+#amb{inset:0 0 -40vh 0}
+#cap{position:fixed;top:0;left:0;right:0;height:var(--top);z-index:240;pointer-events:none;background:linear-gradient(rgba(5,7,13,.94),rgba(5,7,13,.55));-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
+header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
+.hero,.cat{margin-left:calc(var(--l) + 14px);margin-right:calc(var(--rt) + 14px)}
+#sp{padding-left:calc(var(--l) + 18px);padding-right:calc(var(--rt) + 18px)}
+#kbd{left:calc(var(--l) + 8px);right:calc(var(--rt) + 8px)}
+.sw{min-width:0}
+#q{min-width:0;font-size:15px;text-overflow:ellipsis;padding-right:14px}
+#q.has{padding-right:42px}
+#q::placeholder{text-overflow:ellipsis}
+/* iOS style back pill: arrow + label */
+.pill{display:flex;align-items:center;gap:1px;height:40px;padding:0 14px 0 6px;border-radius:20px;flex:none;font-size:15px;font-weight:600;white-space:nowrap;color:#fff}
+.pill .i{width:24px;height:24px;stroke-width:2.4}
+.pill:active{background:rgba(255,255,255,.2)}
+#ctl .pill{background:rgba(60,60,67,.55);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.28);transition:transform .2s,background .2s}
+#ctl .pill:active{transform:scale(.94);background:rgba(130,130,140,.6)}
+#ttl{margin-left:8px}
+#ctl .br .b{flex:0 1 38px;min-width:28px;width:auto}
+/* side menu: items fade + blur out at the top/bottom edge instead of being cut */
+.slw{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+#sl{flex:1;min-height:0;padding:12px 0 30px;-webkit-mask-image:linear-gradient(transparent 0,#000 26px,#000 calc(100% - 34px),transparent 100%);mask-image:linear-gradient(transparent 0,#000 26px,#000 calc(100% - 34px),transparent 100%)}
+.fd{position:absolute;left:-12px;right:-12px;height:32px;pointer-events:none;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.fd.t{top:0;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
+.fd.b{bottom:0;-webkit-mask-image:linear-gradient(transparent,#000);mask-image:linear-gradient(transparent,#000)}
+/* landscape player: pure black bars, no blurry backdrop */
+@media (orientation:landscape) and (pointer:coarse){#pamb{display:none}}
+/* video kept alive (for Picture-in-Picture) while the player UI is closed */
+#player.bg{display:block;visibility:hidden;pointer-events:none}
+@media (orientation:landscape) and (max-height:520px){.hero{height:84svh;min-height:230px;padding-bottom:84px}.hc h1{font-size:24px}.hm{margin:6px 0 12px}}
 </style>
 </head>
 <body>
 <div id="spl"><div class="ring"><img src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""></div><div class="sn">PIKA PICTURE</div><div class="ss">Stream &bull; Watch &bull; Enjoy</div></div>
-<div id="toast"></div><div id="frame"></div>
+<div id="toast"></div><div id="cap"></div>
 <div id="amb"><canvas class="ac" width="24" height="42"></canvas><canvas class="ac" width="24" height="42"></canvas></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -308,18 +340,19 @@ header::before{backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-mask-im
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
 <symbol id="i-bs" viewBox="0 0 24 24"><path d="M9 6h11a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-6-6zM12 9.5l5 5m0-5-5 5"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><path d="M5 7.5h14M5 12h14M5 16.5h14"/></symbol>
+<symbol id="i-ratio" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6.5 11V9h2M17.5 13v2h-2"/></symbol>
 </svg>
 
 <header id="hd">
   <button class="mb lg" id="mbtn" aria-label="Menu" data-ic="menu"></button>  <div class="sw"><svg class="i"><use href="#i-search"/></svg>
-    <input id="q" type="text" readonly inputmode="none" placeholder="Search movies, series..." autocomplete="off" autocapitalize="off" spellcheck="false"><button id="qc" aria-label="Clear"><svg class="i"><use href="#i-xc"/></svg></button>
+    <input id="q" type="text" readonly inputmode="none" placeholder="Search movies, series" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="qc" aria-label="Clear"><svg class="i"><use href="#i-xc"/></svg></button>
     <div id="sug"></div></div>
   <img class="hl2" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt="PIKA PICTURE">
 </header>
 <div id="scrim"></div>
 <div id="kbd" aria-label="Keyboard"></div>
-<nav id="side" class="lg" aria-label="Main menu"><div class="sph"><img class="slg" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""><b>PIKA PICTURE</b><time id="clk"></time></div><div id="sl"></div></nav>
-<section id="sp" aria-label="Search"><button class="b lg ui" id="spx" data-ic="back" aria-label="Close search"></button>
+<nav id="side" class="lg" aria-label="Main menu"><div class="sph"><img class="slg" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""><b>PIKA PICTURE</b><time id="clk"></time></div><div class="slw"><div id="sl"></div><i class="fd t"></i><i class="fd b"></i></div></nav>
+<section id="sp" aria-label="Search"><button class="pill lg ui" id="spx" aria-label="Back to home"><svg class="i"><use href="#i-back"/></svg><span>Home</span></button>
 <h2 id="sqh">Movies, Shows, Cast, and More</h2><div id="kb"></div><div class="slab2" id="sbl">Browse</div><div id="sres"></div></section>
 
 <main id="home">
@@ -332,14 +365,14 @@ header::before{backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-mask-im
 <div id="player" role="dialog" aria-label="Video player">
  <div id="pamb"><canvas class="ac" width="24" height="42"></canvas><canvas class="ac" width="24" height="42"></canvas></div>
  <div id="surf">
-  <video id="v" crossorigin="anonymous" playsinline webkit-playsinline preload="auto"></video>
+  <video id="v" crossorigin="anonymous" playsinline webkit-playsinline preload="metadata"></video>
   <div class="sfx l" id="sfl"><div class="rp"><span data-ic="rew"></span><b></b></div></div>
   <div class="sfx r" id="sfr"><div class="rp"><span data-ic="fwd"></span><b></b></div></div>
   <div id="hud" class="glass"><span id="hi"></span><div id="hb2"></div><b id="ht2"></b></div>
   <div id="busy"></div>
   <div id="ctl">
     <div class="top">
-      <button class="b ui" id="bBack" data-ic="back" aria-label="Back"></button>
+      <button class="pill ui" id="bBack" aria-label="Back"><svg class="i"><use href="#i-back"/></svg><span id="bBackT">Home</span></button>
       <div id="ttl"></div>
       <button class="b ui" id="bEps" data-ic="list" aria-label="Episodes" hidden></button>
       <button class="b ui" id="bDl" data-ic="dl" aria-label="Download"></button>
@@ -361,6 +394,7 @@ header::before{backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-mask-im
         <button class="b ui" id="bA" data-ic="aud" aria-label="Audio"></button>
         <button class="b ui" id="bS" data-ic="cc" aria-label="Subtitles"></button>
         <button class="b ui" id="bSet" data-ic="gear" aria-label="Settings"></button>
+        <button class="b ui" id="bAr" data-ic="ratio" aria-label="Aspect ratio / screen"></button>
         <button class="b ui" id="bPip" data-ic="pip" aria-label="Picture in picture" hidden></button>
         <button class="b ui" id="bLock" data-ic="lock" aria-label="Lock controls"></button>
         <button class="b ui" id="bFs" data-ic="fs" aria-label="Fullscreen / landscape"></button>
@@ -390,6 +424,64 @@ const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform ==
 const fmt = s => { if (!isFinite(s)) return '0:00'; s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60;
   return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(r).padStart(2, '0'); };
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = ic(e.dataset.ic));
+
+/* ===== Haptics: Android = Vibration API, iPhone (Safari 17.4+) = hidden <input switch> tick. Best effort, can be turned off in Settings. ===== */
+const H = (() => {
+  let on = true; try { on = localStorage.getItem('pk_haptics') !== '0'; } catch (_) {}
+  const PAT = {key: [8, 1], tick: [10, 1], light: [12, 1], sel: [10, 1], med: [18, 1], heavy: [32, 1], ok: [[10, 45, 18], 2], warn: [[16, 50, 16], 2], err: [[24, 45, 24, 45, 36], 3]};
+  let lab = null;
+  const mk = () => {
+    if (lab || !document.body) return lab;
+    try {
+      const w = document.createElement('div'); w.setAttribute('aria-hidden', 'true'); w.style.cssText = 'position:fixed;left:-99px;top:-99px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+      const i = document.createElement('input'); i.type = 'checkbox'; i.id = 'pk-hx'; i.setAttribute('switch', ''); i.tabIndex = -1;
+      const l = document.createElement('label'); l.htmlFor = 'pk-hx'; l.textContent = '.'; w.append(i, l);
+      w.addEventListener('click', e => e.stopPropagation()); document.body.appendChild(w); lab = l;
+    } catch (_) {}
+    return lab;
+  };
+  const fire = k => {
+    if (!on) return; const [pat, n] = PAT[k];
+    if (navigator.vibrate) { if (!navigator.userActivation || navigator.userActivation.hasBeenActive) { try { navigator.vibrate(pat); } catch (_) {} } return; }
+    if (!IOS) return; const l = mk(); if (!l) return;
+    for (let i = 0; i < n; i++) setTimeout(() => { try { l.click(); } catch (_) {} }, i * 70);
+  };
+  const o = {get on() { return on; }, set(v) { on = !!v; try { localStorage.setItem('pk_haptics', on ? '1' : '0'); } catch (_) {} }};
+  Object.keys(PAT).forEach(k => { o[k] = () => fire(k); });
+  return o;
+})();
+
+/* ===== Orientation helpers ===== */
+const landMQ = matchMedia('(orientation: landscape) and (pointer: coarse)');
+const isLand = () => landMQ.matches;
+function updBack() { const t = $('bBackT'); if (t) t.textContent = isLand() ? 'Back to Portrait' : 'Home'; }
+landMQ.addEventListener ? landMQ.addEventListener('change', updBack) : landMQ.addListener && landMQ.addListener(updBack);
+
+/* ===== Navigation stack: system Back (Android button / gesture, iOS swipe) closes the TOP layer
+   (keyboard > menus/sheets > player > search page > side menu) and never the website. At home it asks to press again to exit. ===== */
+const NAV = {st: [], guard: false, q: Promise.resolve(), pend: null, gt: 0};
+const navQ = fn => { NAV.q = NAV.q.then(fn).catch(() => {}); };
+function navPush(name, hide) {
+  NAV.st.push({name, hide}); clearTimeout(NAV.gt);
+  navQ(() => { if (!NAV.guard) { history.pushState({pk: 'home'}, ''); NAV.guard = true; } history.pushState({pk: name}, ''); });
+}
+function navDrop(name) {   // layer was closed by the UI itself: remove its history entry
+  const i = NAV.st.map(l => l.name).lastIndexOf(name); if (i < 0) return;
+  NAV.st.splice(i, 1);
+  navQ(() => new Promise(res => { const r = {res, t: setTimeout(() => { if (NAV.pend === r) NAV.pend = null; res(); }, 700)}; NAV.pend = r; history.back(); }));
+}
+function armGuard() { navQ(() => { if (!NAV.guard && !NAV.st.length) { history.pushState({pk: 'home'}, ''); NAV.guard = true; } }); }
+['pointerdown', 'keydown'].forEach(n => addEventListener(n, armGuard, {once: true, passive: true}));   // first real interaction (Chrome skips entries added without one)
+addEventListener('popstate', () => {
+  if (NAV.pend) { const r = NAV.pend; NAV.pend = null; clearTimeout(r.t); r.res(); return; }   // echo of our own history.back()
+  const l = NAV.st.pop();
+  if (l) { try { l.hide(); } catch (_) {} H.light(); return; }
+  if (NAV.guard) {
+    NAV.guard = false; toast('Press back again to exit', 2200); H.warn(); clearTimeout(NAV.gt);
+    NAV.gt = setTimeout(() => navQ(() => { if (!NAV.guard && !NAV.st.length) { history.pushState({pk: 'home'}, ''); NAV.guard = true; } }), 2400);
+  }
+});
+
 
 /* ===== Toast ===== */
 const toastEl = $('toast'); let toastT = 0;
@@ -421,13 +513,13 @@ function scan() { /* finds baked-in black bars (needs CORS-clean video; otherwis
   } catch (_) { P.bars = null; }
 }
 function applyBars() {
-  const b = P.bars; if (!b || (P.bn || 0) < 3 || S.mode !== 'fit' || S.z.s !== 1 || !v.videoWidth) { v.style.clipPath = ''; return; }
+  const b = P.bars; if (!b || isLand() || (P.bn || 0) < 3 || S.mode !== 'fit' || S.z.s !== 1 || !v.videoWidth) { v.style.clipPath = ''; return; }
   const W = surf.clientWidth, H = surf.clientHeight, vw = v.videoWidth, vh = v.videoHeight, s = Math.min(W / vw, H / vh), w = vw * s, h = vh * s, x = (W - w) / 2, y = (H - h) / 2;
   v.style.clipPath = `inset(${y + h * b.t}px ${x + w * b.r}px ${y + h * b.b}px ${x + w * b.l}px)`;
 }
-setInterval(() => { if (!(P.open && !v.paused && !document.hidden && v.videoWidth)) return; scan(); const W = v.videoWidth, H = v.videoHeight, b = P.bars || {t: .14, b: .14, l: 0, r: 0};
+setInterval(() => { if (!(P.open && !v.paused && !document.hidden && v.videoWidth)) return; if (isLand()) { applyBars(); return; } scan(); const W = v.videoWidth, H = v.videoHeight, b = P.bars || {t: .14, b: .14, l: 0, r: 0};
   draw($('pamb'), v, W * b.l, H * b.t, W * (1 - b.l - b.r), H * (1 - b.t - b.b)); applyBars(); }, 1500);
-window.addEventListener('resize', () => applyBars());
+window.addEventListener('resize', () => { applyBars(); layoutV(); updBack(); });
 /* ===== Home ===== */
 const home = $('home'), cats = $('cats');
 let heroItems = [], heroI = 0;
@@ -473,7 +565,7 @@ setInterval(() => { if (P.open || document.hidden || heroItems.length < 2) retur
 /* ===== Search ===== */
 const q = $('q'), sug = $('sug'); let qT = 0, qTok = 0;
 function runSearch(delay) {
-  const s = q.value.trim(); clearTimeout(qT); $('qc').classList.toggle('on', !!q.value);
+  const s = q.value.trim(); clearTimeout(qT); $('qc').classList.toggle('on', !!q.value); q.classList.toggle('has', !!q.value);
   if (s.length < 2) { qTok++; sug.style.display = 'none'; return; }
   sug.innerHTML = '<div class="empty" style="padding:16px">Searching\u2026</div>'; sug.style.display = 'flex';
   qT = setTimeout(async () => {
@@ -490,14 +582,16 @@ function runSearch(delay) {
 q.addEventListener('input', () => runSearch(350));
 /* ===== Own iOS-style keyboard (system / 3rd-party keyboards are blocked: input is readonly + inputmode none) ===== */
 const KB = $('kbd'); let kRep = 0, kRepT = 0;
-const openKbd = () => KB.classList.add('on'), closeKbd = () => KB.classList.remove('on');
+const hideKbd = () => { KB.classList.remove('on'); q.blur(); };
+const openKbd = () => { if (KB.classList.contains('on')) return; KB.classList.add('on'); navPush('kbd', hideKbd); };
+const closeKbd = () => { if (!KB.classList.contains('on')) return; KB.classList.remove('on'); navDrop('kbd'); };
 KB.innerHTML = ['1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((r, i) => '<div class="kr">' + [...r].map(c => `<button data-k="${c}">${c}</button>`).join('') + (i === 3 ? `<button class="kw" data-k="bs" aria-label="Delete">${ic('bs')}</button>` : '') + '</div>').join('') +
   `<div class="kr"><button class="kx" data-k="clr" aria-label="Clear">${ic('x')}</button><button class="ksp" data-k=" ">space</button><button class="kg" data-k="go">Search</button></div>`;
 function kPress(k) {
   if (k === 'go') { closeKbd(); runSearch(0); return; }
   q.value = k === 'bs' ? q.value.slice(0, -1) : k === 'clr' ? '' : (q.value + k).slice(0, 40); runSearch(350);
 }
-KB.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); b.classList.add('p'); navigator.vibrate && navigator.vibrate(5);
+KB.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); b.classList.add('p');
   const k = b.dataset.k; kPress(k); if (k === 'bs') kRepT = setTimeout(() => { kRep = setInterval(() => kPress('bs'), 70); }, 380); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => KB.addEventListener(n, () => { clearTimeout(kRepT); clearInterval(kRep); KB.querySelectorAll('.p').forEach(b => b.classList.remove('p')); }));
 q.addEventListener('focus', openKbd); q.addEventListener('pointerdown', openKbd);
@@ -507,14 +601,14 @@ document.addEventListener('click', e => { if (!e.target.closest('.sw,#kbd')) { s
 
 /* ===== Player state ===== */
 const v = $('v'), player = $('player'), surf = $('surf'), ctl = $('ctl'), menu = $('menu'), epsEl = $('eps');
-const P = {open: false, tk: 0, eps: [], i: -1, streams: [], q: -1, cur: '', caps: [], audios: [], sub: -1, aud: 0, type: '', sid: '', path: '', blobs: [], onMeta: null};
+const P = {open: false, bg: false, title: '', art: '', tk: 0, eps: [], i: -1, streams: [], q: -1, cur: '', caps: [], audios: [], sub: -1, aud: 0, type: '', sid: '', path: '', blobs: [], onMeta: null};
 const S = {locked: false, drag: false, dragT: 0, ctlOn: true, timer: 0, raf: 0, menu: '', mode: 'fit', z: {s: 1, x: 0, y: 0}, bri: 1, unlT: 0, hudT: 0, sbW: 1};
-const MODES = {fit: ['contain', 'Fit'], fill: ['cover', 'Fill'], stretch: ['fill', 'Stretch'], zoom: ['contain', 'Zoom'], orig: ['scale-down', 'Original']};
+const MODES = {fit: ['contain', 'Fit'], fill: ['cover', 'Fill'], stretch: ['fill', 'Stretch'], zoom: ['contain', 'Zoom'], orig: ['scale-down', 'Original'], r169: ['fill', '16:9', 16 / 9], r43: ['fill', '4:3', 4 / 3], r219: ['fill', '21:9', 21 / 9]};
 const SPEEDS = [.25, .5, .75, 1, 1.25, 1.5, 1.75, 2];
 
 /* ----- busy / error ----- */
 function busy(on) { $('busy').classList.toggle('on', on); if (!on && S.ctlOn) arm(); }
-function showErr(msg) { $('em').textContent = msg || ''; $('err').classList.toggle('on', !!msg); if (msg) { busy(false); showCtl(); } }
+function showErr(msg) { $('em').textContent = msg || ''; $('err').classList.toggle('on', !!msg); if (msg) { busy(false); showCtl(); H.err(); } }
 
 /* ----- control visibility: auto-hide after CFG.ctlHide, held while dragging / menu / sheet / loading / error ----- */
 const held = () => S.drag || S.menu || epsEl.classList.contains('on') || $('busy').classList.contains('on') || $('err').classList.contains('on');
@@ -577,7 +671,7 @@ async function openTitle(path, title) {
     const d = (await (await fetch(`${API}/detail?detailPath=${encodeURIComponent(path)}`)).json()).data;
     if (tk !== P.tk) return;
     if (!d?.subject) throw new Error('Details not available for this title.');
-    P.path = path; P.sid = d.subject.subjectId; P.eps = []; const cu = cov(d.subject); if (cu) ambImg($('pamb'), px(cu));
+    P.path = path; P.sid = d.subject.subjectId; P.eps = []; const cu = cov(d.subject); P.title = title || d.subject.title || ''; P.art = cu ? px(cu) : ''; if (cu) ambImg($('pamb'), px(cu));
     (d.resource?.seasons || []).filter(s => s.se > 0).forEach(s => { for (let i = 1; i <= s.maxEp; i++) P.eps.push({se: s.se, ep: i}); });
     P.type = P.eps.length ? '/tv-series/detail' : '/movie/detail';
     buildEps(); playIdx(P.eps.length ? 0 : -1);
@@ -593,7 +687,7 @@ async function playIdx(i) {
     if (!d?.streams?.length) throw new Error('Video not available' + (d?.hasResource ? ' (resource has no streams).' : '.'));
     P.streams = d.streams.slice().sort((a, b) => parseInt(b.resolutions) - parseInt(a.resolutions));
     P.bars = null; P.bn = 0; P.q = -1; P.caps = d.captions || []; P.audios = (d.audios || []).filter(a => a.url); P.sub = -1; P.aud = 0; clearTracks();
-    qLabel(); navState(); load(P.streams[0].url, false);
+    qLabel(); navState(); v.setAttribute('crossorigin', 'anonymous'); setMeta(); load(P.streams[0].url, false);
   } catch (e) { if (tk === P.tk) { P.cur = ''; showErr(e.message || 'Network error.'); } }
 }
 const qName = s => s.resolutions ? parseInt(s.resolutions) + 'p' : 'Source';
@@ -608,14 +702,16 @@ function buildEps() {
 }
 function markEps() { $('el').querySelectorAll('.eb').forEach(b => b.classList.toggle('a', +b.dataset.i === P.i)); }
 $('el').addEventListener('click', e => { const b = e.target.closest('.eb'); if (b) { closeEps(); playIdx(+b.dataset.i); } });
-const closeEps = () => { epsEl.classList.remove('on'); if (S.ctlOn) arm(); };
+const hideEps = () => { epsEl.classList.remove('on'); if (S.ctlOn) arm(); };
+const closeEps = () => { const was = epsEl.classList.contains('on'); hideEps(); if (was) navDrop('eps'); };
 
 /* ===== Menus (quality / audio / subtitles / speed / screen) ===== */
-function closeMenu() { S.menu = ''; menu.classList.remove('on'); if (S.ctlOn) arm(); }
-function openMenu(kind) { if (S.menu === kind) return closeMenu(); S.menu = kind; renderMenu(); menu.classList.add('on'); showCtl(); }
+function hideMenu() { S.menu = ''; menu.classList.remove('on'); if (S.ctlOn) arm(); }
+function closeMenu() { const was = menu.classList.contains('on'); hideMenu(); if (was) navDrop('menu'); }
+function openMenu(kind) { if (S.menu === kind && menu.classList.contains('on')) return closeMenu(); S.menu = kind; renderMenu(); if (!menu.classList.contains('on')) { menu.classList.add('on'); navPush('menu', hideMenu); } showCtl(); }
 function menuItems(k) {
-  if (k === 'root') return ['Quality|' + (P.q < 0 ? 'Auto' : qName(P.streams[P.q])) + '|q', 'Audio||a', 'Subtitles|' + (P.sub < 0 ? 'Off' : 'On') + '|s', 'Speed|' + v.playbackRate + '×|sp', 'Screen|' + MODES[S.mode][1] + '|r']
-    .map(r => { const [t, sub, go] = r.split('|'); return {t, sub, chev: 1, fn: () => { S.menu = go; renderMenu(); }}; });
+  if (k === 'root') return ['Quality|' + (P.q < 0 ? 'Auto' : qName(P.streams[P.q])) + '|q', 'Audio||a', 'Subtitles|' + (P.sub < 0 ? 'Off' : 'On') + '|s', 'Speed|' + v.playbackRate + '×|sp', 'Screen|' + MODES[S.mode][1] + '|r', 'Haptics|' + (H.on ? 'On' : 'Off') + '|h']
+    .map(r => { const [t, sub, go] = r.split('|'); return go === 'h' ? {t, sub, fn: () => { H.set(!H.on); renderMenu(); H.med(); }} : {t, sub, chev: 1, fn: () => { S.menu = go; renderMenu(); }}; });
   if (k === 'q') {
     if (P.streams.length < 2) return [{t: P.streams.length ? 'Only ' + qName(P.streams[0]) + ' available' : 'No stream loaded', dis: 1}];
     return [{t: 'Auto', sub: 'Best available', on: P.q < 0, fn: () => setQ(-1)}, ...P.streams.map((s, i) => ({t: qName(s), on: P.q === i, fn: () => setQ(i)}))];
@@ -660,7 +756,13 @@ async function setSub(i) {
 
 /* ===== Aspect ratio / zoom ===== */
 function applyZ() { v.style.transform = `translate(${S.z.x}px,${S.z.y}px) scale(${S.z.s})`; }
-function setMode(m) { S.mode = m; v.style.objectFit = MODES[m][0]; S.z = {s: m === 'zoom' ? 1.4 : 1, x: 0, y: 0}; applyZ(); applyBars(); toast('Screen: ' + MODES[m][1]); }
+function layoutV() {   // forced ratios (16:9 / 4:3 / 21:9) size the video box itself; other modes use object-fit on the full surface
+  const ar = MODES[S.mode][2];
+  if (!ar) { v.style.inset = ''; v.style.width = ''; v.style.height = ''; return; }
+  const W = surf.clientWidth, H0 = surf.clientHeight; let w = W, h = W / ar; if (h > H0) { h = H0; w = H0 * ar; }
+  v.style.inset = 'auto'; v.style.left = (W - w) / 2 + 'px'; v.style.top = (H0 - h) / 2 + 'px'; v.style.width = w + 'px'; v.style.height = h + 'px';
+}
+function setMode(m, quiet) { S.mode = m; v.style.objectFit = MODES[m][0]; S.z = {s: m === 'zoom' ? 1.4 : 1, x: 0, y: 0}; applyZ(); layoutV(); applyBars(); if (!quiet) toast('Screen: ' + MODES[m][1]); }
 
 /* ===== HUD ===== */
 function hud(icon, f, text) {
@@ -668,13 +770,14 @@ function hud(icon, f, text) {
   $('hud').classList.add('on'); clearTimeout(S.hudT); S.hudT = setTimeout(() => $('hud').classList.remove('on'), 900);
 }
 let iosNote = false;
+function stepH(f) { const k = Math.round(f * 10); if (S.hs === undefined) { S.hs = k; return; } if (k !== S.hs) { S.hs = k; H.tick(); } }
 function setVol(f) {
-  f = clamp(f, 0, 1); v.volume = f; if (f > 0) v.muted = false;
+  f = clamp(f, 0, 1); stepH(f); v.volume = f; if (f > 0) v.muted = false;
   if (IOS && v.volume !== f) { if (!iosNote) { iosNote = true; toast('iOS: use the device volume buttons'); } return; }
   hud(f === 0 ? 'mute' : 'vol', f, Math.round(f * 100) + '%');
 }
 function setBri(f) { // Video-only brightness filter: web pages cannot change the real screen brightness
-  S.bri = clamp(f, CFG.briMin, CFG.briMax); v.style.filter = S.bri === 1 ? '' : `brightness(${S.bri})`;
+  S.bri = clamp(f, CFG.briMin, CFG.briMax); stepH((S.bri - CFG.briMin) / (CFG.briMax - CFG.briMin)); v.style.filter = S.bri === 1 ? '' : `brightness(${S.bri})`;
   hud('sun', (S.bri - CFG.briMin) / (CFG.briMax - CFG.briMin), 'Video ' + Math.round(S.bri * 100) + '%');
 }
 
@@ -695,7 +798,7 @@ function onTap(x) {
   if (tap.n === 1) { tap.timer = setTimeout(() => { tap.n = 0; toggleCtl(); }, CFG.tapMs); return; }
   const total = tap.n === 2 ? 10 : tap.n * 10;           // 2 taps=10s, 3=30s, 4=40s, 5=50s...
   const done = seekBy((side === 'r' ? 1 : -1) * (total - Math.abs(tap.acc)));
-  tap.acc += done; flash(side, tap.acc);                  // overlay shows the amount actually seeked
+  tap.acc += done; flash(side, tap.acc); H.tick();                  // overlay shows the amount actually seeked
 }
 const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 function mid(a, b) { const r = surf.getBoundingClientRect(); return {x: (a.clientX + b.clientX) / 2 - r.left - r.width / 2, y: (a.clientY + b.clientY) / 2 - r.top - r.height / 2}; }
@@ -738,8 +841,9 @@ $('bQ').onclick = () => openMenu('q');
 $('bA').onclick = () => openMenu('a');
 $('bS').onclick = () => openMenu('s');
 $('bSet').onclick = () => openMenu('root');
-$('bEps').onclick = () => { closeMenu(); epsEl.classList.add('on'); showCtl(); };
-$('bBack').onclick = () => closePlayer();
+$('bAr').onclick = () => openMenu('r');
+$('bEps').onclick = () => { closeMenu(); if (!epsEl.classList.contains('on')) { epsEl.classList.add('on'); navPush('eps', hideEps); } showCtl(); };
+$('bBack').onclick = () => { if (isLand()) toPortrait(); else closePlayer(); };
 $('bLock').onclick = () => { S.locked = true; closeMenu(); forceHide(); showUnl(); toast('Controls locked'); };
 $('unl').onclick = () => { S.locked = false; $('unl').classList.remove('on'); showCtl(); };
 $('bDl').onclick = () => { if (!P.cur) return; const a = document.createElement('a'); a.href = px(P.cur); a.download = 'PIKA_PICTURE_Video.mp4'; a.target = '_blank'; document.body.appendChild(a); a.click(); a.remove(); };
@@ -760,9 +864,9 @@ function scrub(e) {
   S.dragT = f * (v.duration || 0); tip.textContent = fmt(S.dragT);
   tip.style.transform = `translateX(${clamp(f * r.width, 24, r.width - 24)}px) translateX(-50%)`; paint();
 }
-sb.addEventListener('pointerdown', e => { if (!v.duration) return; sb.setPointerCapture(e.pointerId); S.drag = true; tip.classList.add('on'); scrub(e); });
+sb.addEventListener('pointerdown', e => { if (!v.duration) return; sb.setPointerCapture(e.pointerId); S.drag = true; tip.classList.add('on'); H.tick(); scrub(e); });
 sb.addEventListener('pointermove', e => { if (S.drag) scrub(e); });
-const endDrag = e => { if (!S.drag) return; S.drag = false; tip.classList.remove('on'); if (e.type === 'pointerup') v.currentTime = S.dragT; paint(); showCtl(); };
+const endDrag = e => { if (!S.drag) return; S.drag = false; H.light(); tip.classList.remove('on'); if (e.type === 'pointerup') v.currentTime = S.dragT; paint(); showCtl(); };
 sb.addEventListener('pointerup', endDrag); sb.addEventListener('pointercancel', endDrag);
 
 /* ===== Fullscreen + landscape (real APIs first, CSS fallback) ===== */
@@ -787,26 +891,52 @@ async function exitFs() {
 const syncFs = () => { $('bFs').style.color = isFs() ? 'var(--g)' : ''; paint(); };
 $('bFs').onclick = () => { toggleFs(); showCtl(); };
 ['fullscreenchange', 'webkitfullscreenchange'].forEach(n => document.addEventListener(n, () => { if (!fsEl()) { try { screen.orientation.unlock(); } catch (_) {} } syncFs(); }));
-window.addEventListener('orientationchange', syncFs);
+window.addEventListener('orientationchange', () => { syncFs(); updBack(); layoutV(); });
 
 /* ===== Open / close ===== */
+const pipActive = () => document.pictureInPictureElement === v || v.webkitPresentationMode === 'picture-in-picture';
+function exitPip() { try { if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {}); else if (v.webkitPresentationMode === 'picture-in-picture') v.webkitSetPresentationMode('inline'); } catch (_) {} }
+function stopVideo() {
+  if (P.onMeta) { v.removeEventListener('loadedmetadata', P.onMeta); P.onMeta = null; }
+  v.pause(); v.removeAttribute('src'); v.load(); clearTracks(); P.cur = ''; P.bg = false; player.classList.remove('bg');
+  try { navigator.mediaSession.playbackState = 'none'; } catch (_) {}
+}
 function openPlayer(title) {
-  if (!P.open) history.pushState({pk: 1}, '');
+  if (P.bg) { P.bg = false; player.classList.remove('bg'); exitPip(); }
+  if (!P.open) navPush('player', hidePlayer);
   P.open = true; player.classList.add('on'); document.body.classList.add('pl');
   $('ttl').textContent = title || ''; P.bars = null; P.bn = 0; P.streams = []; P.eps = []; P.i = -1; P.cur = ''; P.caps = []; P.audios = [];
   $('bQ').textContent = 'Auto'; $('bEps').hidden = true; $('bPrev').disabled = $('bNext').disabled = true;
-  S.locked = false; $('unl').classList.remove('on'); closeMenu(); closeEps(); clearTracks(); setMode('fit'); setBri(1); $('hud').classList.remove('on');
-  v.playbackRate = 1; showErr(''); paint(); showCtl();
+  S.locked = false; $('unl').classList.remove('on'); closeMenu(); closeEps(); clearTracks(); setMode('fit', true); setBri(1); $('hud').classList.remove('on');
+  v.playbackRate = 1; showErr(''); paint(); showCtl(); updBack();
 }
-function closePlayer() {
-  if (!P.open) return; P.open = false; P.tk++;
-  clearTimeout(S.timer); clearTimeout(S.hudT); clearTimeout(S.unlT); clearTimeout(tap.timer); cancelAnimationFrame(S.raf); S.raf = 0; S.drag = false;
-  if (P.onMeta) v.removeEventListener('loadedmetadata', P.onMeta);
-  v.pause(); v.removeAttribute('src'); v.load(); clearTracks(); exitFs();
-  player.classList.remove('on'); document.body.classList.remove('pl'); busy(false);
-  if (history.state?.pk) history.back();
+function hidePlayer() {   // UI teardown. If the video is in Picture-in-Picture it keeps playing (P.bg) so it is still alive on the home screen
+  if (!P.open) return;
+  const keep = pipActive() && !!v.getAttribute('src');
+  P.open = false; clearTimeout(S.timer); clearTimeout(S.hudT); clearTimeout(S.unlT); clearTimeout(tap.timer); cancelAnimationFrame(S.raf); S.raf = 0; S.drag = false;
+  hideMenu(); epsEl.classList.remove('on'); player.classList.remove('on'); if (!sp.classList.contains('on')) document.body.classList.remove('pl'); busy(false); exitFs();
+  if (keep) { P.bg = true; player.classList.add('bg'); } else { P.tk++; stopVideo(); }
 }
-window.addEventListener('popstate', () => { if (P.open) closePlayer(); });
+function closePlayer() { if (!P.open) return; closeMenu(); closeEps(); hidePlayer(); navDrop('player'); }
+function reopenPlayer() {   // PiP "expand" button: bring the full player back, same video, same position
+  if (!P.bg) return; P.bg = false; player.classList.remove('bg');
+  P.open = true; player.classList.add('on'); document.body.classList.add('pl'); navPush('player', hidePlayer);
+  setPlayIcon(); updBack(); paint(); showCtl(); layoutV();
+}
+function onPipLeave() {
+  if (!P.bg) return; clearTimeout(P.pipT);
+  P.pipT = setTimeout(() => { if (!P.bg) return; if (document.visibilityState === 'visible') reopenPlayer(); else { P.bg = false; stopVideo(); } }, 280);
+}
+v.addEventListener('leavepictureinpicture', onPipLeave);
+v.addEventListener('webkitpresentationmodechanged', () => { if (v.webkitPresentationMode === 'inline') onPipLeave(); });
+v.addEventListener('enterpictureinpicture', () => H.ok());
+async function toPortrait() {   // landscape "Back to Portrait": lock portrait (Android, needs fullscreen), leave fullscreen, then release the lock
+  try { if (fsEl() && screen.orientation && screen.orientation.lock) { await screen.orientation.lock('portrait'); await new Promise(r => setTimeout(r, 350)); } } catch (_) {}
+  player.classList.remove('imm');
+  try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (_) {}
+  syncFs();
+  setTimeout(() => { try { screen.orientation.unlock(); } catch (_) {} if (isLand()) toast('Rotate your phone to portrait', 2600); }, 700);
+}
 document.addEventListener('keydown', e => {
   if (!P.open || e.target.matches('input')) return;
   if (e.key === ' ') { e.preventDefault(); togglePlay(); showCtl(); }
@@ -821,7 +951,7 @@ document.addEventListener('gesturestart', e => { if (!e.target.closest('#player'
 
 /* ===== Poster cache: service worker only on https/http origins (not file://) ===== */
 if ('serviceWorker' in navigator && isSecureContext && /^https?:$/.test(location.protocol)) {
-  navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW not registered:', e));
+  navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(() => { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); }).catch(e => console.warn('SW not registered:', e));
 }
 
 /* ===== tvOS 26 liquid-glass shell: side menu, search page, hero dock ===== */
@@ -841,8 +971,9 @@ function setActive(k) {
   sideBtns.forEach(b => b.classList.toggle('on', b === el));
   ind.style.height = el.offsetHeight + 'px'; ind.style.transform = `translateY(${el.offsetTop}px)`;
 }
-function openSide() { if (P.open) return; side.classList.add('open'); document.body.classList.add('menu'); document.documentElement.classList.add('lk'); tick(); clearInterval(clkT); clkT = setInterval(tick, 30000); requestAnimationFrame(() => setActive(sideBtns.find(b => b.classList.contains('on'))?.dataset.k)); }
-function closeSide() { side.classList.remove('open'); document.body.classList.remove('menu'); document.documentElement.classList.remove('lk'); clearInterval(clkT); }
+function openSide() { if (P.open || side.classList.contains('open')) return; side.classList.add('open'); document.body.classList.add('menu'); document.documentElement.classList.add('lk'); tick(); clearInterval(clkT); clkT = setInterval(tick, 30000); requestAnimationFrame(() => setActive(sideBtns.find(b => b.classList.contains('on'))?.dataset.k)); navPush('side', hideSide); }
+function hideSide() { side.classList.remove('open'); document.body.classList.remove('menu'); document.documentElement.classList.remove('lk'); clearInterval(clkT); }
+function closeSide() { if (!side.classList.contains('open')) return; hideSide(); navDrop('side'); }
 $('scrim').addEventListener('touchmove', e => e.preventDefault(), {passive: false}); $('side').addEventListener('touchmove', e => { if (!sl.contains(e.target) || sl.scrollHeight <= sl.clientHeight) e.preventDefault(); }, {passive: false}); $('mbtn').onclick = openSide; $('scrim').onclick = closeSide;
 sl.addEventListener('click', e => {
   const b = e.target.closest('.sbi'); if (!b) return; const k = b.dataset.k; setActive(k);
@@ -877,8 +1008,9 @@ function renderQ() {
 }
 $('kb').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const c = b.dataset.c; sq = c === '\b' ? sq.slice(0, -1) : sq + c; renderQ(); });
 sp.addEventListener('click', e => { const c = e.target.closest('.mc'); if (c) openTitle(c.dataset.p, c.dataset.t); });
-function openSearch() { sp.classList.add('on'); document.body.classList.add('pl'); renderQ(); }
-function closeSearch() { if (!sp.classList.contains('on')) return; sp.classList.remove('on'); if (!P.open) document.body.classList.remove('pl'); }
+function openSearch() { if (!sp.classList.contains('on')) { sp.classList.add('on'); document.body.classList.add('pl'); navPush('search', hideSearch); } renderQ(); }
+function hideSearch() { sp.classList.remove('on'); if (!P.open) document.body.classList.remove('pl'); }
+function closeSearch() { if (!sp.classList.contains('on')) return; hideSearch(); navDrop('search'); }
 $('spx').onclick = () => { closeSearch(); setActive('home'); };
 
 /* Hero dock (Top Shelf style): tap a tile to switch the featured title */
@@ -895,8 +1027,26 @@ hero.addEventListener('touchstart', e => { const t = e.touches[0]; hs = {x: t.cl
 hero.addEventListener('touchmove', e => { if (!hs) return; const t = e.touches[0]; hs.dx = t.clientX - hs.x; const dy = t.clientY - hs.y, dx = hs.dx;
   cancelAnimationFrame(hr); hr = requestAnimationFrame(() => tilt(clamp(-dy / 12, -7, 7).toFixed(1), clamp(dx / 12, -9, 9).toFixed(1))); }, {passive: true});
 const hend = () => { if (!hs) return; const d = hs.dx; hs = null; cancelAnimationFrame(hr); hero.classList.remove('drag'); tilt(0, 0);
-  if (Math.abs(d) > 60 && heroItems.length > 1) { heroI = (heroI + (d < 0 ? 1 : heroItems.length - 1)) % heroItems.length; setHero(heroI); } };
+  if (Math.abs(d) > 60 && heroItems.length > 1) { heroI = (heroI + (d < 0 ? 1 : heroItems.length - 1)) % heroItems.length; setHero(heroI); H.sel(); } };
 hero.addEventListener('touchend', hend); hero.addEventListener('touchcancel', hend);
+
+/* ===== v6: lock-screen / PiP controls + delegated haptics ===== */
+function setMeta() {
+  if (!('mediaSession' in navigator)) return;
+  const it = P.eps[P.i], t = (P.title || '') + (it ? ' \u00b7 S' + it.se + 'E' + it.ep : '');
+  try { navigator.mediaSession.metadata = new MediaMetadata({title: t, artist: 'PIKA PICTURE', artwork: P.art ? [{src: P.art, sizes: '512x512'}] : []}); } catch (_) {}
+}
+if ('mediaSession' in navigator) {
+  const ms = navigator.mediaSession, set = (a, f) => { try { ms.setActionHandler(a, f); } catch (_) {} };
+  set('play', () => v.play().catch(() => {})); set('pause', () => v.pause());
+  set('seekbackward', () => seekBy(-10)); set('seekforward', () => seekBy(10));
+  set('previoustrack', () => { if (!$('bPrev').disabled) playIdx(P.i - 1); }); set('nexttrack', () => { if (!$('bNext').disabled) playIdx(P.i + 1); });
+  set('seekto', d => { if (d && d.seekTime != null) v.currentTime = d.seekTime; });
+}
+const DOWN = '.mb,.b,.chip,.pill,.sbi,.eb,.mi,.wn,#dock button,#kbd button,#kb button,#qc,#err button,.empty button';
+const hk = t => t.matches('#kbd .kg,.wn,#bPlay') ? 'med' : t.matches('#bLock,#unl') ? 'heavy' : t.matches('#kbd button,#kb button') ? 'key' : t.matches('.sbi,.eb,.mi,#dock button') ? 'sel' : 'light';
+document.addEventListener(IOS ? 'click' : 'pointerdown', e => { const t = e.target.closest && e.target.closest(DOWN); if (t && !t.disabled) H[hk(t)](); }, {capture: true, passive: true});
+document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('.mc,.si'); if (t) H.sel(); }, true);   // posters: on tap, not on scroll-start
 
 loadHome();
 })();
