@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PIKA - NETNINJA</title>
+    <title>PIKA - PICTURE</title>
     <style>
         /* =========================================
            CSS VARIABLES & GLOBAL RESET (iOS STYLE)
@@ -230,7 +230,7 @@
 
     <!-- ==================== HEADER ==================== -->
     <header id="main-header">
-        <div class="logo">PIKA NETNINJA</div>
+        <div class="logo">PIKA PICTURE</div>
         <div class="search-container">
             <svg class="icon icon-sm search-icon"><use href="#i-search"></use></svg>
             <input type="text" class="search-input" id="search-input" placeholder="Search movies, series..." autocomplete="off">
@@ -243,7 +243,7 @@
     <main id="home-view">
         <!-- Hero Banner -->
         <div class="hero" id="hero-banner">
-            <img id="hero-bg-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0;" referrerpolicy="no-referrer" src="" onerror="this.src='https://via.placeholder.com/800x600/101114/00a826?text=PIKA+NETNINJA'">
+            <img id="hero-bg-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0;" referrerpolicy="no-referrer" src="" onerror="this.src='https://via.placeholder.com/800x600/101114/00a826?text=PIKA+PICTURE'">
             <div class="hero-content" style="z-index: 10;">
                 <h1 class="hero-title" id="hero-title">Loading...</h1>
                 <div class="hero-meta" id="hero-meta">
@@ -396,7 +396,7 @@ if (data.operatingList) {
             if (imgUrl) {
                 document.getElementById('hero-bg-img').src = `${API_BASE}/proxy?url=${encodeURIComponent(imgUrl)}`;
             } else {
-                document.getElementById('hero-bg-img').src = 'https://via.placeholder.com/800x600/101114/00a826?text=PIKA+NETNINJA';
+                document.getElementById('hero-bg-img').src = 'https://via.placeholder.com/800x600/101114/00a826?text=PIKA+PICTURE';
             }
 
             document.getElementById('hero-title').innerText = sub.title || item.title || "Unknown";
@@ -688,7 +688,7 @@ video.play().catch(e => { console.log("Play Error:", e); });
             if (video.src) {
                 const a = document.createElement('a');
                 a.href = video.src;
-                a.download = "PIKA_NETNINJA_Video.mp4";
+                a.download = "PIKA_PICTURE_Video.mp4";
                 a.target = "_blank";
                 document.body.appendChild(a);
                 a.click();
