@@ -355,7 +355,7 @@
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
         // --- CONFIGURATION ---
-        const API_BASE = "http://193.122.76.131:5001/api";
+        const API_BASE = "https://pika-movie-box.duckdns.org/api";
         const video = document.getElementById('main-video');
         const playerView = document.getElementById('player-view');
         const controls = document.getElementById('player-controls');
@@ -387,7 +387,7 @@ if (data.operatingList) {
             const item = items[currentIndex];
             const sub = item.subject || item; // Banner data subject ke andar hota hai
             
-            let imgUrl = sub.cover?.url || sub.coverUrl || sub.image || item.cover?.url || '';
+            let imgUrl = typeof sub.cover === 'string' ? sub.cover : (sub.cover?.url || sub.coverUrl || sub.image || item.cover?.url || '');
             if (!imgUrl) {
                 const firstMovie = data.operatingList.find(op => op.subjects && op.subjects.length > 0)?.subjects[0];
                 if (firstMovie) imgUrl = firstMovie.cover?.url || firstMovie.image;
@@ -431,7 +431,7 @@ if (data.operatingList) {
                             const detailPath = movie.detailPath || movie.subjectId;
                             html += `
                                 <div class="movie-card" onclick="fetchMovieDetail('${detailPath}', '${movie.title}')">
-                                    <img src="${API_BASE}/proxy?url=${encodeURIComponent(movie.cover?.url || movie.image)}" class="movie-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/110x165/1c1c1e/8e8e93?text=No+Img'">
+                                    <img src="${API_BASE}/proxy?url=${encodeURIComponent(typeof movie.cover === 'string' ? movie.cover : (movie.cover?.url || movie.image || ''))}" class="movie-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/110x165/1c1c1e/8e8e93?text=No+Img'">
                                     <div class="movie-title">${movie.title}</div>
                                 </div>
                             `;
@@ -478,7 +478,7 @@ if (data.operatingList) {
                             const div = document.createElement('div');
                             div.className = 'suggestion-item';
                             div.innerHTML = `
-                                <img src="${API_BASE}/proxy?url=${encodeURIComponent(item.cover?.url || item.image)}" class="suggestion-img">
+                                <img src="${API_BASE}/proxy?url=${encodeURIComponent(typeof item.cover === 'string' ? item.cover : (item.cover?.url || item.image || ''))}" class="suggestion-img">
                                 <div class="suggestion-title">${item.title}</div>
                             `;
                             div.onclick = () => {
