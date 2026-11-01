@@ -7,7 +7,7 @@
   "theme_color": "#00a826",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2503/2503508.png",
+      "src": "https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png",
       "sizes": "512x512",
       "type": "image/png"
     }
