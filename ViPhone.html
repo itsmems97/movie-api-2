@@ -185,7 +185,7 @@ const genericApp=n=>el=>{el.innerHTML=`<div class="meta" style="text-align:cente
 const ITEMS=[];
 const CFG_ARR=[];
 const URLS={}; /* optional local fallback, e.g. {1:'https://your-backend.com/app1'} */
-async function loadCfg(){try{const r=await fetch(BASE+'apps.json',{cache:'no-store'});return await r.json()}catch(e){return{}}}
+async function loadCfg(){try{const r=await fetch(BASE+'apps.json?t='+Date.now(),{cache:'no-store'});return await r.json()}catch(e){return{}}}
 const cfgOf=(c,n)=>(Array.isArray(c)?c[n-1]:(c[n]||c[n+'.png']||c[String(n)]))||{};
 let CFG={};
 function addItem(n,img){const base=APPS[n-1];const c=cfgOf(CFG,n);const it=base?{...base}:{id:'x'+n,n:'App '+n,a:'#ffd0ea',b:'#a77cff',f:genericApp(n)};
