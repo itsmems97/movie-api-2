@@ -227,6 +227,7 @@ canvas{touch-action:none;display:block}
 .gl{backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5)}
 .rim{box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),0 4px 12px rgba(40,0,60,.35)}
 .win{will-change:auto}
+html,body,.phone,.wall,.win{overflow:clip!important}
 .win.anim{will-change:clip-path,transform}
 .win.anim .wf,.win.anim .wf.on{opacity:0;visibility:hidden;transition:none}
 .win.web .body{bottom:var(--sa-b)}
@@ -298,7 +299,7 @@ async function loadCfg(){for(const u of [BASE+'apps.json',BASE.replace('iPhone/'
 const cfgOf=(c,n)=>(Array.isArray(c)?c[n-1]:(c[n]||c[n+'.png']||c[String(n)]))||{};
 let CFG={};
 function addItem(n,img){const base=APPS[n-1];const c=cfgOf(CFG,n);const it=base?{...base}:{id:'x'+n,n:'App '+n,a:'#ffd0ea',b:'#a77cff',f:genericApp(n)};
- if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];if(u)it.url=u;
+ if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];const _k=String(u||'').toLowerCase(),_msg=encodeURIComponent('Hello, ViPhone Team:\n[ Write Problem Here ]');if(_k==='whatsapp')it.link='https://wa.me/923041891897?text='+_msg;else if(_k==='telegram')it.link='https://t.me/Owner_Pikazoo?text='+_msg;else if(u)it.url=u;
  it.img=img;if(img){const k=avg(img);if(k){it.a=k[0];it.b=k[1]}}ITEMS[n-1]=it;return it}
 function addGrid(it){const b=document.createElement('button');b.className='app';b.setAttribute('aria-label',it.n);b.innerHTML=tile(it)+`<span></span>`;b.querySelector('span').textContent=it.n;b.onclick=()=>openOrRestore(it,b.querySelector('.tile'));grid.appendChild(b)}
 async function boot(){
@@ -422,11 +423,11 @@ pushH({ iWatchHome: true }, '', location.pathname);
 let _arm=0;addEventListener('pointerdown',()=>{if(_arm++)return;pushH({iWatchHome:true},'',location.pathname);pushH({iWatchHome:true},'',location.pathname)},{passive:true});
 
 window.addEventListener('popstate', (e) => {
-    if (down||busy) return; // Agar animation chal rahi hai toh ignore karo
+    if (down) return; if (busy) { pushH({ iWatchHome: true }, '', location.pathname); return; } // Agar animation chal rahi hai toh ignore karo
 
     if (cur) {
         // App khuli hai -> Back dabane par MINIMIZE karo (close nahi)
-        closeWin(cur, true, true); // Teesra argument 'true' matlab yeh back button se aaya hai
+        pushH({ iWatchHome: true }, '', location.pathname); closeWin(cur, true, true); // Teesra argument 'true' matlab yeh back button se aaya hai
     } else {
         // Home screen par hain
         if (exitCounter === 1) {
@@ -485,7 +486,7 @@ function showWin(a,srcTile,fromIsland){
  busy=true;cur=a;playOpen();
  
  // App open hote hi history mein state save hogi
- pushH({ iWatchApp: a.id }, '', '#app=' + a.id);
+ /* app open: no history entry pushed (it clashed with the app's own history) */
  
  const rec=getWin(a);rec.srcTile=srcTile;box=fromIsland?islandBox():measure(srcTile);rec.box=box;
  const el=rec.el;
@@ -505,7 +506,7 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
  
  // Agar user ne UI (Red/Yellow button) se band kiya hai, toh history back karo
  if(!fromPopstate){
-   history.back();
+   /* no history.back() here: it would also pop the app's own page history */
  }
  
  const rec=winMap.get(a),el=rec.el,srcTile=rec.srcTile;box=rec.box||box;
@@ -534,7 +535,7 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
    if(after)after();
  }
 }
-function openOrRestore(it,tileEl){showWin(it,tileEl)}
+function openOrRestore(it,tileEl){if(it.link){window.open(it.link,'_blank','noopener');return}showWin(it,tileEl)}
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&cur)closeWin(cur,false)});
 
 /* ---------- Dynamic Island: only visible on the home screen, parks minimized apps ---------- */
@@ -582,6 +583,7 @@ function renderIsland(){
  }
 }
 renderIsland();
+addEventListener('scroll',function(e){var t=e.target;if(t===document){scrollTo(0,0);return}if(t&&t.nodeType===1&&t.matches&&t.matches('html,body,.phone,.wall,.win,.inner,.body')){t.scrollTop=0;t.scrollLeft=0}},true);
 
 /* ---------- web apps: each icon's backend URL runs full-screen inside its own window ---------- */
 function webAppInto(a,winEl,body){const ob=winEl.querySelector('.wopen');
