@@ -1,5 +1,5 @@
 {
-  "1": { "name": "Calculator", "url": "" },
+  "1": { "name": "YouTube",    "url": "https://www.youtube.com/embed/dQw4w9WgXcQ?playsinline=1&rel=0" },
   "2": { "name": "Notes",      "url": "" },
   "3": { "name": "Stopwatch",  "url": "" },
   "4": { "name": "Sketch",     "url": "" },

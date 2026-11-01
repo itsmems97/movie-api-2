@@ -51,7 +51,7 @@ body{background:var(--surround);display:grid;place-items:center;font-family:"SF 
 .dk{background:none;border:0;padding:0;cursor:pointer;transform-origin:50% 100%;transform:translateY(calc((1 - var(--s,1))*28px)) scale(var(--s,1));transition:transform .18s ease-out;touch-action:manipulation}
 .dk .tile{width:60px;height:60px;border-radius:20px}
 /* app window: always full size, revealed by an animated rounded clip-path */
-.win{position:absolute;inset:0;display:none;z-index:5;overflow:hidden;background:linear-gradient(165deg,#3b1a63 0%,#7a2c88 55%,#b8407f 100%);will-change:clip-path,transform;transform-origin:50% 100%}
+.win{position:absolute;inset:0;display:none;z-index:5;overflow:hidden;will-change:clip-path,transform;transform-origin:50% 100%}
 .win.show{display:block}
 .tint{position:absolute;inset:0;background:linear-gradient(145deg,var(--a),var(--b));opacity:0;pointer-events:none;z-index:3}
 .inner{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity .3s}
@@ -128,6 +128,9 @@ canvas{touch-action:none;display:block}
 .exit:active{transform:scale(.86)}
 .exit svg{width:18px;height:18px;stroke:#fff;stroke-width:2.6;stroke-linecap:round;fill:none}
 .wopen{position:absolute;z-index:7;right:14px;top:calc(var(--sa-t) + 16px);width:38px;height:38px;border-radius:50%;font-size:17px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.launch{position:absolute;display:none;object-fit:cover;opacity:0;pointer-events:none;z-index:3;left:0;top:0}
+.wbg{position:absolute;inset:0;background:linear-gradient(165deg,#3b1a63 0%,#7a2c88 55%,#b8407f 100%)}
+.dock.nt .dk{transition:none}
 </style>
 </head>
 <body>
@@ -142,8 +145,10 @@ canvas{touch-action:none;display:block}
   </div>
   <div class="dockwrap" id="dockwrap"><div class="dock glass" id="dock"></div></div>
   <div class="win" id="win">
+    <div class="wbg" id="wbg"></div>
     <div class="inner" id="inner"><div class="bar" id="bar"></div><div class="body" id="body"></div></div>
     <div class="tint" id="tint"></div>
+    <img class="launch" id="launch" alt="">
     <button class="exit" id="exit" aria-label="Close app"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <a class="wopen" id="wopen" target="_blank" rel="noopener" aria-label="Open in browser">↗</a>
   </div>
@@ -221,37 +226,51 @@ function drawWx(w){const el=$('#wWx');
  if(!w){el.innerHTML=`<div class="top"><small class="city">Weather</small><div class="cond">Locating…</div></div>`;return}
  if(w.err){el.innerHTML=`<div class="top"><small class="city">${w.city||'Weather'}</small><div class="cond">Unavailable</div></div><div class="retry">Tap to retry</div>`;return}
  el.innerHTML=`<div class="top"><small class="city">${w.city}</small><div class="cond">${WC[w.code]||'—'}</div></div><div class="wb"><div class="deg">${Math.round(w.t)}°</div><div class="wi">${wIcon(w.code,w.day)}</div></div>`}
-const geo=()=>new Promise((res,rej)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude}),rej,{timeout:8000,maximumAge:3600000}):rej());
+const tzCity=()=>(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' ');
+const geoOnce=hi=>new Promise((res,rej)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude}),rej,{enableHighAccuracy:hi,timeout:hi?15000:10000,maximumAge:300000}):rej());
+const geo=()=>geoOnce(false).catch(e=>e&&e.code===1?Promise.reject(e):geoOnce(true));
 async function locate(){
  try{const p=await geo();let city='';
   try{const r=await(await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${p.lat}&longitude=${p.lon}&localityLanguage=en`)).json();city=r.city||r.locality||r.principalSubdivision||''}catch(e){}
-  return{...p,city}}catch(e){}
- try{const r=await(await fetch('https://ipapi.co/json/')).json();if(r.latitude)return{lat:r.latitude,lon:r.longitude,city:r.city||''}}catch(e){}
- const r=await(await fetch('https://ipwho.is/')).json();return{lat:r.latitude,lon:r.longitude,city:r.city||''}}
+  return{...p,city,src:'gps'}}catch(e){}
+ try{const r=await(await fetch('https://ipapi.co/json/')).json();if(r.latitude)return{lat:r.latitude,lon:r.longitude,city:r.city||'',src:'ip'}}catch(e){}
+ const r=await(await fetch('https://ipwho.is/')).json();return{lat:r.latitude,lon:r.longitude,city:r.city||'',src:'ip'}}
 async function loadWx(){
- try{let L;try{L=JSON.parse(store.get('lg_loc','null'))}catch(e){}
-  if(!L||Date.now()-L.at>36e5){L={...await locate(),at:Date.now()};store.set('lg_loc',JSON.stringify(L))}
+ try{let L;try{L=JSON.parse(store.get('lg_loc2','null'))}catch(e){}
+  if(!L||Date.now()-L.at>(L.src==='gps'?9e5:3e5)){L={...await locate(),at:Date.now()};store.set('lg_loc2',JSON.stringify(L))}
   const j=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&current=temperature_2m,weather_code,is_day&timezone=auto`)).json();
-  const c=j.current;drawWx({city:L.city||(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' '),t:c.temperature_2m,code:c.weather_code,day:!!c.is_day})
- }catch(e){drawWx({err:1,city:(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' ')});setTimeout(loadWx,30000)}}
-drawWx(null);loadWx();setInterval(loadWx,6e5);$('#wWx').onclick=()=>{drawWx(null);loadWx()};
+  const c=j.current;drawWx({city:(L.src==='ip'?'≈ ':'')+(L.city||tzCity()),t:c.temperature_2m,code:c.weather_code,day:!!c.is_day})
+ }catch(e){drawWx({err:1,city:tzCity()});setTimeout(loadWx,30000)}}
+const refreshWx=()=>{store.set('lg_loc2','null');drawWx(null);loadWx()};
+drawWx(null);loadWx();setInterval(loadWx,6e5);
+$('#wWx').onclick=refreshWx;
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadWx()});
+try{navigator.permissions.query({name:'geolocation'}).then(r=>{r.onchange=refreshWx})}catch(e){}
 
 /* ---------- open / close: rounded clip-path morph from the icon ---------- */
 const win=$('#win'),home=$('#home'),dw=$('#dockwrap'),phone=$('#phone'),tint=$('#tint');
 const EASE='cubic-bezier(.32,.72,0,1)';
 let cur=null,srcTile=null,cleanup=null,busy=false,anims=[];
 const phoneRad=()=>parseFloat(getComputedStyle(phone).borderTopLeftRadius)||0;
-const fullClip=()=>`inset(0px 0px 0px 0px round ${phoneRad()}px)`;
-function iconClip(){const r=srcTile.getBoundingClientRect(),p=phone.getBoundingClientRect();
- return `inset(${r.top-p.top}px ${p.right-r.right}px ${p.bottom-r.bottom}px ${r.left-p.left}px round ${r.width*.33}px)`}
+const fullClip=()=>`inset(0px 0px 0px 0px round ${Math.max(phoneRad(),48)}px)`;
+let box=null;
+function measure(el){const dk=el.closest('.dk');if(dk){dock.classList.add('nt');unmag();void dock.offsetWidth}
+ const r=el.getBoundingClientRect(),p=phone.getBoundingClientRect();if(dk)dock.classList.remove('nt');
+ return{l:r.left-p.left,t:r.top-p.top,w:r.width,h:r.height,pw:p.width,ph:p.height}}
+function iconClip(){return `inset(${box.t}px ${box.pw-box.l-box.w}px ${box.ph-box.t-box.h}px ${box.l}px round ${box.w*.33}px)`}
 const run=(el,kf,ms)=>{const a=el.animate(kf,{duration:ms,easing:EASE,fill:'forwards'});anims.push(a);return a};
-function openApp(a,src){if(cur||busy)return;busy=true;cur=a;srcTile=src;
+function launchAnim(open,a){const L=$('#launch');
+ if(!a.img){L.style.display='none';run(tint,open?[{opacity:.95},{opacity:0}]:[{opacity:0},{opacity:.95}],520);return}
+ const ic={left:box.l+'px',top:box.t+'px',width:box.w+'px',height:box.h+'px'},fu={left:'0px',top:'0px',width:box.pw+'px',height:box.ph+'px'};
+ L.src=a.img.src;L.style.display='block';
+ run(L,open?[{...ic,opacity:1,offset:0},{opacity:1,offset:.25},{...fu,opacity:0,offset:1}]:[{...fu,opacity:0,offset:0},{opacity:0,offset:.35},{...ic,opacity:1,offset:1}],open?560:520)}
+function openApp(a,src){if(cur||busy)return;busy=true;cur=a;srcTile=src;box=measure(src);
  win.style.setProperty('--a',a.a);win.style.setProperty('--b',a.b);win.classList.remove('ready');
  win.classList.remove('slow');win.classList.toggle('web',!!a.url);$('#bar').textContent=a.n;$('#body').innerHTML='';cleanup=(a.url?webApp(a):a.f($('#body')))||null;
  win.classList.add('show');
  const from=iconClip();
  const w=run(win,[{clipPath:from,transform:'scale(1)'},{clipPath:fullClip(),transform:'scale(1)'}],560);
- run(tint,[{opacity:.95},{opacity:0}],520);
+ launchAnim(true,a);src.style.visibility='hidden';run($('#wbg'),[{opacity:0,offset:0},{opacity:1,offset:.5},{opacity:1,offset:1}],560);
  run($('#inner'),[{transform:'scale(.9)'},{transform:'scale(1)'}],560);
  home.classList.add('away');dw.classList.add('away');
  setTimeout(()=>win.classList.add('ready'),200);
@@ -262,10 +281,10 @@ function closeApp(fromState){if(!cur||busy&&!fromState)return;busy=true;
  win.classList.remove('ready');
  const start=fromState||{clipPath:fullClip(),transform:'none'};
  const w=run(win,[start,{clipPath:iconClip(),transform:'scale(1)'}],520);
- run(tint,[{opacity:0},{opacity:.95}],520);
+ launchAnim(false,cur);run($('#wbg'),[{opacity:1,offset:0},{opacity:0,offset:.75},{opacity:0,offset:1}],520);
  run($('#inner'),[{transform:'scale(1)'},{transform:'scale(.9)'}],520);
  home.classList.remove('away');dw.classList.remove('away');
- w.onfinish=()=>{anims.forEach(x=>x.cancel());anims=[];if(cl)cl();$('#body').innerHTML='';win.classList.remove('show','web','slow');win.style.cssText='';cur=null;busy=false}}
+ w.onfinish=()=>{anims.forEach(x=>x.cancel());anims=[];if(cl)cl();srcTile.style.visibility='';$('#body').innerHTML='';win.classList.remove('show','web','slow');win.style.cssText='';cur=null;busy=false}}
 $('#exit').onclick=()=>closeApp();
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeApp()});
 
