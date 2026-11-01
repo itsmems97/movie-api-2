@@ -1,0 +1,15 @@
+{
+  "name": "PIKA PICTURE",
+  "short_name": "PIKA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00a826",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2503/2503508.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
