@@ -3,11 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<script>
+(function () {
+  var d = document.documentElement, ua = navigator.userAgent;
+  var TV = /SMART-TV|SmartTV|Tizen|Web0S|WebOS|NetCast|AppleTV|HbbTV|BRAVIA|GoogleTV|Android TV|CrKey|Roku|VIERA|AFT[A-Z]+\b|Fire ?TV|AquosBrowser|DTV/i;
+  function pick() {
+    var o = (location.search.match(/[?&]view=(tv|desktop|tablet|phone|auto)/) || [])[1];
+    try { if (o === 'auto') localStorage.removeItem('pk_view'); else if (o) localStorage.setItem('pk_view', o); else o = localStorage.getItem('pk_view'); } catch (e) {}
+    if (o && o !== 'auto') return o;
+    if (TV.test(ua)) return 'tv';
+    var w = innerWidth, h = innerHeight, sh = Math.min(w, h), coarse = matchMedia('(pointer:coarse)').matches;
+    if (coarse && sh < 600) return 'phone';
+    if (coarse && sh < 1000 && w < 1100) return 'tablet';
+    if (!coarse && w < 700) return 'phone';
+    return 'desktop';
+  }
+  function set() { var v = pick(); if (d.dataset.dev !== v) d.dataset.dev = v; }
+  set(); var t = 0; addEventListener('resize', function () { clearTimeout(t); t = setTimeout(set, 150); });
+  window.__pkDev = set;
+})();
+</script>
+
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>PIKA PICTURE</title>
+<title>i📽⋆˚࿔WATCH</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
 <link rel="preload" as="image" href="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png">
 <link rel="preload" as="font" type="font/ttf" crossorigin href="https://raw.githubusercontent.com/itsmems97/itsmems97.github.io/main/VIP.ttf">
 <style>
@@ -170,7 +193,7 @@ body.menu #scrim{opacity:1;pointer-events:auto}
 #kb .w{font-size:13px;padding:0 12px;background:#ffffff26}
 .slab2{font-size:19px;font-weight:700;margin:20px 0 12px;color:#ffffffd9}
 #sres{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px}
-#sres .mc{flex:none}#sres .po{height:156px}
+#stabs[hidden],#smore[hidden]{display:none!important}#stabs{display:flex;gap:8px;overflow-x:auto;margin:6px 0 12px}#stabs button{flex:none;padding:8px 15px;border-radius:18px;background:rgba(255,255,255,.1);font-size:13px;font-weight:600}#stabs button.on{background:#fff;color:#111}#stabs i{font-style:normal;opacity:.6;margin-left:4px}#sres .mc{flex:none}#sres .po{height:156px}
 #spx{position:fixed;z-index:210;left:calc(var(--l) + 14px);top:calc(var(--top) + 12px)}
 
 /* ===== v3: font, ambient glass, 3D hero, iOS player ===== */
@@ -272,6 +295,24 @@ header::before{backdrop-filter:none;-webkit-backdrop-filter:none;-webkit-mask-im
 #kbd .kw{flex:1.6}#kbd .kx{flex:1.5}#kbd .ksp{flex:5;font-size:15px;color:rgba(255,255,255,.7)}
 #kbd .kg{flex:2.6;background:var(--g);color:#00210c;font-size:16px;font-weight:700}#kbd .kg.p{background:#7be495}
 #kbd .i{width:22px;height:22px}
+#kbd{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05)),rgba(30,30,36,.94);will-change:transform;contain:layout paint;touch-action:manipulation}
+#kbd button{transition:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+#kbd button.p{transform:none}
+#qcar{position:absolute;top:11px;left:40px;width:2px;height:20px;border-radius:1px;background:var(--g);pointer-events:none;display:none;animation:cblink 1s steps(1) infinite}.sw.kon #qcar{display:block}@keyframes cblink{50%{opacity:0}}
+.sw #sug .i{position:static;left:auto;top:auto;width:20px;height:20px;transition:none;color:var(--t2);flex:none}.sw #sug .rx .i{width:16px;height:16px}
+
+/* QWERTY layout, same key positions as the phone keyboard */
+#kbd,#kb{--kw:calc((100% - 45px)/10)}
+#kb{display:flex;flex-direction:column;gap:7px;overflow:visible;margin:14px 0 4px;padding-bottom:10px}
+#kb .kr{display:flex;gap:5px;justify-content:center}
+#kb button{height:44px;border-radius:12px;background:rgba(255,255,255,.17);color:#fff;font-size:20px;display:grid;place-items:center;padding:0;min-width:0}
+#kbd .kr,#kb .kr{justify-content:center}
+#kbd .k,#kb .k{flex:none;width:var(--kw)}
+#kbd .kx,#kb .kx{flex:1;min-width:0}#kb span.kx{background:none;box-shadow:none}
+#kbd .kw,#kb .kw{flex:1;min-width:0}
+#kbd .ksp,#kb .ksp{flex:1;font-size:15px;color:rgba(255,255,255,.7)}
+#kbd .kg{flex:0 0 28%}
+#kb .i{width:22px;height:22px}
 
 /* ===== v6: safe areas, no black strips, iOS-style back pills, side-menu edge blur, black landscape, PiP background ===== */
 html{background:#05070d;min-height:100%}
@@ -305,10 +346,108 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
 /* video kept alive (for Picture-in-Picture) while the player UI is closed */
 #player.bg{display:block;visibility:hidden;pointer-events:none}
 @media (orientation:landscape) and (max-height:520px){.hero{height:84svh;min-height:230px;padding-bottom:84px}.hc h1{font-size:24px}.hm{margin:6px 0 12px}}
+
+/* ===== v7 additions ===== */
+.cat h2{display:flex;align-items:center;gap:8px}
+.ex{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);flex:none}.ex .i{width:15px;height:15px;stroke-width:2.6}
+.mc{position:relative}
+.fv,.rm{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:2;color:#fff}
+.fv .i,.rm .i{width:15px;height:15px}.fv.on .i,#bFav.on .i{fill:#ff375f;stroke:#ff375f}
+.pw{position:relative;border-radius:12px;overflow:hidden}.pw .po{border-radius:0}
+.pb{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.35)}.pb b{display:block;height:100%;background:#f00}
+.ms{font-size:11px;color:#ffffff99;text-align:center}
+#pg{position:fixed;inset:0;z-index:250;overflow:auto;overscroll-behavior:contain;background:linear-gradient(165deg,#2a4068,#101a2e 62%,#070b14);padding:calc(var(--top) + 64px) calc(var(--rt) + 16px) calc(var(--bot) + 28px) calc(var(--l) + 16px);transform:translateY(18px) scale(.98);opacity:0;visibility:hidden;transition:transform .5s cubic-bezier(.2,.9,.25,1),opacity .4s,visibility 0s .5s}
+#pg.on{transform:none;opacity:1;visibility:visible;transition:transform .5s cubic-bezier(.2,.9,.25,1),opacity .4s}
+#pgx{position:fixed;z-index:260;left:calc(var(--l) + 14px);top:calc(var(--top) + 12px)}
+.pgh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}#pgt{font-size:26px;font-weight:700}
+#pga{background:rgba(255,59,48,.2);color:#ff6b61;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:700;flex:none}
+#pgtabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px}#pgtabs button{flex:none;padding:8px 14px;border-radius:18px;background:rgba(255,255,255,.1);font-size:13px;font-weight:600}#pgtabs button.on{background:#fff;color:#111}#pgtabs i{font-style:normal;opacity:.6;margin-left:3px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px}.pgrid .mc{flex:none}.pgrid .po{height:156px;width:100%;object-fit:cover;display:block}
+.more{display:block;margin:18px auto 0;padding:10px 26px;border-radius:20px;background:var(--g);font-weight:700}
+.qlist{display:flex;flex-direction:column}.qi{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line);font-size:15px}.qi span{flex:1;display:flex;align-items:center;gap:10px}.qi .i{width:17px;height:17px;color:var(--t2)}.qi .rm{position:static;flex:none}
+.rsh,.rhh{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2);padding:8px 12px}.rsh button,.rhh button{color:#ff6b61;font-size:12px;font-weight:700}
+.rhh{padding:0;margin:14px 0 8px}.rch{display:flex;flex-wrap:wrap;gap:8px}.rc{display:flex;align-items:center;gap:6px;padding:7px 8px 7px 13px;border-radius:18px;background:rgba(255,255,255,.12);font-size:14px}.rc button{display:grid;place-items:center;width:20px;height:20px;opacity:.7}.rc .i,.rx .i{width:13px;height:13px}
+.si.rs{justify-content:space-between}.rx{width:28px;height:28px;display:grid;place-items:center;opacity:.6}
+.shh{display:flex;align-items:center;gap:8px;padding:6px 14px 4px;font-size:15px;font-weight:700}.shh i{font-style:normal;background:#f00;border-radius:10px;padding:0 7px;font-size:12px}.shh .i{margin-left:auto;width:16px;height:16px}
+.shr{display:flex;gap:9px;overflow-x:auto;padding:6px 14px 10px}.mh{flex:0 0 72px}.mh .po{width:72px;height:104px;object-fit:cover;display:block;background:var(--s2)}.mh span{display:block;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shn{padding:4px 14px 10px;font-size:12px;color:#ffffff8c}
+.si.sg{gap:14px;padding:13px 14px}.si.sg .i{width:20px;height:20px;color:var(--t2);flex:none}.hl{color:#4a7bff;font-weight:inherit}
+
+/* ===== Adaptive layout: phone / tablet / desktop / TV (auto-detected, see data-dev on <html>) ===== */
+.cat{position:relative}
+.rnb{position:absolute;z-index:6;width:44px;height:44px;border-radius:50%;display:none;place-items:center;background:rgba(20,20,24,.82);border:1px solid rgba(255,255,255,.25);color:#fff;opacity:0;transition:opacity .2s}
+.rnb.l{left:6px}.rnb.r{right:6px}.rnb.l .i{transform:rotate(180deg)}.rnb .i{width:22px;height:22px;position:static}
+@media (hover:hover) and (pointer:fine){.rnb{display:grid}.cat:hover .rnb{opacity:1}.mc:hover{transform:scale(1.04)}.sbi,.si,#stabs button,.more{cursor:pointer}}
+@media (min-width:700px){
+  header{padding-left:calc(var(--l) + 24px);padding-right:calc(var(--rt) + 24px)}
+  .sw{max-width:560px;margin-left:auto;margin-right:auto}
+  .hero{margin-left:24px;margin-right:24px;height:64svh;min-height:420px}
+  .hc h1{font-size:40px}.hm{font-size:15px}
+  .cat{margin-left:24px;margin-right:24px}
+  .mc,.row .mc{flex-basis:140px}
+  .row .po{height:auto;aspect-ratio:2/3}
+  #sres,.pgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px}
+  #sres .po,.pgrid .po{height:auto;aspect-ratio:2/3}
+  #kbd,#kb{max-width:620px}#kbd{margin-left:auto;margin-right:auto}#kb{margin-left:auto;margin-right:auto}
+  #sp,#pg{padding-left:max(24px,calc((100% - 1300px)/2));padding-right:max(24px,calc((100% - 1300px)/2))}
+}
+@media (min-width:1100px){
+  .mc,.row .mc{flex-basis:168px}
+  #sres,.pgrid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
+  .hc h1{font-size:52px}
+  #side{width:340px}
+}
+@media (min-width:1500px){
+  .mc,.row .mc{flex-basis:190px}
+  #sres,.pgrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+  .hc h1{font-size:60px}.hm{font-size:17px}
+  #q{height:48px;font-size:17px}
+}
+/* TV: overscan-safe margins, 10-foot sizes, remote focus ring */
+html[data-dev="tv"]{cursor:none}
+html[data-dev="tv"] header{padding-left:calc(var(--l) + 4vw);padding-right:calc(var(--rt) + 4vw)}
+html[data-dev="tv"] .hero,html[data-dev="tv"] .cat{margin-left:4vw;margin-right:4vw}
+html[data-dev="tv"] #sp,html[data-dev="tv"] #pg{padding-left:4vw;padding-right:4vw}
+html[data-dev="tv"] .mc,html[data-dev="tv"] .row .mc{flex-basis:max(190px,12vw)}
+html[data-dev="tv"] #sres,html[data-dev="tv"] .pgrid{grid-template-columns:repeat(auto-fill,minmax(max(190px,12vw),1fr))}
+html[data-dev="tv"] .hc h1{font-size:max(52px,3.6vw)}html[data-dev="tv"] .hm{font-size:max(18px,1.3vw)}
+html[data-dev="tv"] .mt{font-size:max(15px,1.05vw)}html[data-dev="tv"] .cat h2{font-size:max(24px,1.7vw)}
+html[data-dev="tv"] .wn{font-size:max(20px,1.4vw);padding:16px 34px}
+html[data-dev="tv"] #q{height:56px;font-size:20px}html[data-dev="tv"] .sbi{font-size:20px}
+html[data-dev="tv"] #side{width:max(340px,24vw)}
+html[data-dev="tv"] #kbd{max-width:min(900px,70vw)}html[data-dev="tv"] #kbd button,html[data-dev="tv"] #kb button{height:60px;font-size:24px}
+html[data-dev="tv"] .row{padding:16px 12px 20px;scroll-padding:0 12px}
+.tvf{outline:4px solid #fff!important;outline-offset:3px;border-radius:14px;transform:scale(1.07)!important;z-index:7;box-shadow:0 0 0 7px rgba(48,209,88,.55)}
+
+/* ===== Frosted pages (same coloured blur as the home background) + themed dialog ===== */
+body.pl #home{visibility:hidden}
+#sp,#pg{background:linear-gradient(165deg,rgba(42,64,104,.5),rgba(16,26,46,.55) 62%,rgba(7,11,20,.66));backdrop-filter:blur(28px) saturate(1.6);-webkit-backdrop-filter:blur(28px) saturate(1.6)}
+#dlg{position:fixed;inset:0;z-index:900;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.5);opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+#dlg.on{opacity:1;visibility:visible;transition:opacity .25s}
+#dlg .dc{width:min(340px,100%);border-radius:30px;padding:24px 20px 18px;text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.07)),rgba(30,34,46,.82);backdrop-filter:blur(26px) saturate(1.7);-webkit-backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 24px 60px rgba(0,0,0,.6);transform:scale(.9);transition:transform .38s cubic-bezier(.2,.9,.25,1.15)}
+#dlg.on .dc{transform:none}
+#dlg h3{font-size:19px;font-weight:800;margin-bottom:6px}#dlg p{font-size:14px;color:#c9ccd6;line-height:1.4}
+#dlg .db{display:flex;gap:10px;margin-top:20px}
+#dlg .db button{flex:1;height:46px;border-radius:23px;font-size:15px;font-weight:700;background:rgba(255,255,255,.15);color:#fff}
+#dlg .db button.ok{background:#ff453a}#dlg .db button.ok.go{background:var(--g);color:#00210c}
+#dlg .db button:active{transform:scale(.96)}
+html[data-dev="tv"] #dlg .dc{width:min(520px,60vw)}html[data-dev="tv"] #dlg h3{font-size:28px}html[data-dev="tv"] #dlg p{font-size:20px}html[data-dev="tv"] #dlg .db button{height:60px;font-size:20px}
+
+/* ===== Scroll-glitch fix: no blur layers on every card, and no blur on hidden panels ===== */
+.fv,.rm{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(18,20,26,.68)}
+#sp:not(.on),#pg:not(.on),#side.lg:not(.open),#dlg:not(.on) .dc{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* ===== GPU-load reduction (fixes missing/pixelated tiles on fast scroll) ===== */
+.cat{content-visibility:visible;contain-intrinsic-size:none}
+header .mb,header .lg,#home .lg,#home .glass,#dock,.hero .lg,.hero .glass{backdrop-filter:none;-webkit-backdrop-filter:none}
+#dock{background-color:rgba(24,26,34,.5)}
+header .mb{background-color:rgba(40,42,52,.55)}
+#side.lg{backdrop-filter:none;-webkit-backdrop-filter:none;background-color:rgba(26,30,42,.88)}
+#trend-sent{height:1px}.tst{text-align:center;font-size:13px;opacity:.6;padding:6px 0;min-height:0}.tst:empty{padding:0}
+#bQ{display:flex;flex-direction:column;align-items:center;justify-content:center;height:38px;line-height:1.05;padding:0 9px}#bQ small{font-size:9px;font-weight:600;opacity:.7;letter-spacing:.3px}#bQ b{font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
-<div id="spl"><div class="ring"><img src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""></div><div class="sn">PIKA PICTURE</div><div class="ss">Stream &bull; Watch &bull; Enjoy</div></div>
+<div id="spl"><div class="ring"><img src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""></div><div class="sn">i📽⋆˚࿔WATCH</div><div class="ss">Stream &bull; Watch &bull; Enjoy</div></div>
 <div id="toast"></div><div id="cap"></div>
 <div id="amb"><canvas class="ac" width="24" height="42"></canvas><canvas class="ac" width="24" height="42"></canvas></div>
 
@@ -341,19 +480,23 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
 <symbol id="i-bs" viewBox="0 0 24 24"><path d="M9 6h11a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-6-6zM12 9.5l5 5m0-5-5 5"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><path d="M5 7.5h14M5 12h14M5 16.5h14"/></symbol>
 <symbol id="i-ratio" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6.5 11V9h2M17.5 13v2h-2"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+<symbol id="i-expand" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
 </svg>
 
 <header id="hd">
   <button class="mb lg" id="mbtn" aria-label="Menu" data-ic="menu"></button>  <div class="sw"><svg class="i"><use href="#i-search"/></svg>
-    <input id="q" type="text" readonly inputmode="none" placeholder="Search movies, series" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="qc" aria-label="Clear"><svg class="i"><use href="#i-xc"/></svg></button>
+    <input id="q" type="text" readonly inputmode="none" placeholder="Search movies, series" autocomplete="off" autocapitalize="off" spellcheck="false"><i id="qcar"></i><button id="qc" aria-label="Clear"><svg class="i"><use href="#i-xc"/></svg></button>
     <div id="sug"></div></div>
-  <img class="hl2" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt="PIKA PICTURE">
+  <img class="hl2" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt="i📽⋆˚࿔WATCH">
 </header>
 <div id="scrim"></div>
 <div id="kbd" aria-label="Keyboard"></div>
-<nav id="side" class="lg" aria-label="Main menu"><div class="sph"><img class="slg" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""><b>PIKA PICTURE</b><time id="clk"></time></div><div class="slw"><div id="sl"></div><i class="fd t"></i><i class="fd b"></i></div></nav>
+<nav id="side" class="lg" aria-label="Main menu"><div class="sph"><img class="slg" src="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png" alt=""><b>i📽⋆˚࿔WATCH</b><time id="clk"></time></div><div class="slw"><div id="sl"></div><i class="fd t"></i><i class="fd b"></i></div></nav>
 <section id="sp" aria-label="Search"><button class="pill lg ui" id="spx" aria-label="Back to home"><svg class="i"><use href="#i-back"/></svg><span>Home</span></button>
-<h2 id="sqh">Movies, Shows, Cast, and More</h2><div id="kb"></div><div class="slab2" id="sbl">Browse</div><div id="sres"></div></section>
+<h2 id="sqh">Movies, Shows, Cast, and More</h2><div id="kb"></div><div id="srh"></div><div id="stabs" hidden></div><div class="slab2" id="sbl">Browse</div><div id="sres"></div><button class="more" id="smore" hidden>Load more</button></section>
+
+<section id="pg" aria-label="Library"><button class="pill lg ui" id="pgx" aria-label="Back"><svg class="i"><use href="#i-back"/></svg><span>Back</span></button><div class="pgh"><h2 id="pgt"></h2><button id="pga" hidden>Clear all</button></div><div id="pgtabs" hidden></div><div id="pgb"></div></section>
 
 <main id="home">
   <div class="hero"><img id="hb" alt="" referrerpolicy="no-referrer" hidden>
@@ -375,6 +518,7 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
       <button class="pill ui" id="bBack" aria-label="Back"><svg class="i"><use href="#i-back"/></svg><span id="bBackT">Home</span></button>
       <div id="ttl"></div>
       <button class="b ui" id="bEps" data-ic="list" aria-label="Episodes" hidden></button>
+      <button class="b ui" id="bFav" data-ic="heart" aria-label="Save"></button>
       <button class="b ui" id="bDl" data-ic="dl" aria-label="Download"></button>
     </div>
     <div class="mid">
@@ -390,9 +534,9 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
         <span id="td">0:00</span></div>
       <div class="br">
         <button class="b ui" id="bMute" aria-label="Mute"></button><div class="sp"></div>
-        <button class="chip ui" id="bQ">Auto</button>
-        <button class="b ui" id="bA" data-ic="aud" aria-label="Audio"></button>
-        <button class="b ui" id="bS" data-ic="cc" aria-label="Subtitles"></button>
+        <button class="chip ui" id="bQ"><small>Quality</small><b>Auto</b></button>
+        <button class="b ui" id="bA" data-ic="aud" aria-label="Audio" hidden></button>
+        <button class="b ui" id="bS" data-ic="cc" aria-label="Audio, dubbing and subtitles"></button>
         <button class="b ui" id="bSet" data-ic="gear" aria-label="Settings"></button>
         <button class="b ui" id="bAr" data-ic="ratio" aria-label="Aspect ratio / screen"></button>
         <button class="b ui" id="bPip" data-ic="pip" aria-label="Picture in picture" hidden></button>
@@ -541,11 +685,15 @@ function setHero(i) {
 async function loadHome() {
   cats.innerHTML = '<div class="cat"><div class="row">' + '<div class="sk"></div>'.repeat(6) + '</div></div>';
   try {
-    const d = (await (await fetch(`${API}/home`)).json()).data, lists = d.operatingList || [];
+    const response = await fetch(`${API}/home`);
+if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+const json = await response.json();
+if (!json || !json.data) throw new Error("API returned no data.");
+const d = json.data, lists = d.operatingList || [];
     const ban = lists.find(o => o.type === 'BANNER'); heroItems = ban?.banner?.items || ban?.subjects || [];
     if (!heroItems.length) { const f = lists.find(o => o.subjects?.length)?.subjects || []; heroItems = f.slice(0, 5); }
     setHero(0);
-    cats.innerHTML = lists.filter(o => o.subjects?.length).map(o => `<section class="cat"><h2>${esc(o.title)}</h2><div class="row">` +
+    cats.innerHTML = realCats(lists).map(o => `<section class="cat"><h2>${esc(o.title)}</h2><div class="row">` +
       o.subjects.map(m => `<div class="mc" data-p="${esc(m.detailPath || m.subjectId)}" data-t="${esc(m.title)}"><img class="po" src="${px(cov(m))}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="" draggable="false"><div class="mt">${esc(m.title)}</div></div>`).join('') +
       '</div></section>').join('') || '<div class="empty">Nothing to show yet.</div>';
     buildSide(lists); buildDock();
@@ -553,8 +701,8 @@ async function loadHome() {
       [...r.children].forEach((c, i) => c.style.setProperty('--i', Math.min(i, 8))); r.classList.add('in'); setTimeout(() => r.classList.add('done'), 1300); }), {threshold: .12});
     cats.querySelectorAll('.row').forEach(r => io.observe(r));
   } catch (e) {
-    console.error('Home error', e);
-    cats.innerHTML = '<div class="empty">Could not load content.<br><button id="rh">Retry</button></div>';
+  console.error('Home error', e);
+  cats.innerHTML = `<div class="empty" style="color: #ff6b6b; text-align: center;">Error: ${e.message}<br><button id="rh" style="margin-top:10px; padding: 10px 20px; background: var(--g); border-radius: 20px; color: white; font-weight: bold;">Retry</button></div>`;
     $('rh').onclick = loadHome;
   } finally { hideSplash(); }
 }
@@ -563,45 +711,109 @@ home.addEventListener('error', e => { if (e.target.classList?.contains('po')) e.
 setInterval(() => { if (P.open || document.hidden || heroItems.length < 2) return; heroI = (heroI + 1) % heroItems.length; setHero(heroI); }, 6500);
 
 /* ===== Search ===== */
-const q = $('q'), sug = $('sug'); let qT = 0, qTok = 0;
+const q = $('q'), sug = $('sug'); let qT = 0, qTok = 0, qAbort = null;
 function runSearch(delay) {
-  const s = q.value.trim(); clearTimeout(qT); $('qc').classList.toggle('on', !!q.value); q.classList.toggle('has', !!q.value);
-  if (s.length < 2) { qTok++; sug.style.display = 'none'; return; }
-  sug.innerHTML = '<div class="empty" style="padding:16px">Searching\u2026</div>'; sug.style.display = 'flex';
+  try { moveCaret(); } catch (_) {} const s = q.value.trim(); clearTimeout(qT); $('qc').classList.toggle('on', !!q.value); q.classList.toggle('has', !!q.value);
+  if (s.length < 2) { qTok++; showRecent(); return; }
+  if (!sug.querySelector('.sg')) sug.innerHTML = '<div class="empty" style="padding:16px">Searching\u2026</div>'; sug.style.display = 'flex';
   qT = setTimeout(async () => {
     const tk = ++qTok;
     try {
-      const res = await fetch(`${API}/search?q=${encodeURIComponent(s)}`); if (!res.ok) throw new Error(res.status);
-      const j = await res.json(), items = j.data?.items || j.data?.subjects || j.data?.list || (Array.isArray(j.data) ? j.data : []);
+      if (qAbort) qAbort.abort(); qAbort = new AbortController();
+      const res = await fetch(`${API}/suggest?q=${encodeURIComponent(s)}`, {signal: qAbort.signal}); const json = await res.json(); const words = json.data?.items || [];
       if (tk !== qTok) return;
-      sug.innerHTML = items.length ? items.map(m => `<div class="si" data-p="${esc(m.detailPath || m.subjectId)}" data-t="${esc(m.title)}"><img src="${px(cov(m))}" alt="" referrerpolicy="no-referrer"><span>${esc(m.title)}</span></div>`).join('')
-        : '<div class="empty" style="padding:16px">No results found</div>';
-    } catch (e) { if (tk === qTok) sug.innerHTML = '<div class="empty" style="padding:16px">Search failed \u2013 check connection</div>'; }
+      const hl = w => w.toLowerCase().startsWith(s.toLowerCase()) ? `<b class="hl">${esc(w.slice(0, s.length))}</b>${esc(w.slice(s.length))}` : esc(w);
+      sug.innerHTML = words.length ? words.map(w => `<div class="si sg" data-sg="${esc(w)}">${ic('search')}<span>${hl(w)}</span></div>`).join('') : '<div class="empty" style="padding:16px">No suggestions</div>';
+    } catch (e) { if (e.name !== 'AbortError' && tk === qTok) sug.innerHTML = '<div class="empty" style="padding:16px">Search failed \u2013 check connection</div>'; }
   }, delay);
 }
 q.addEventListener('input', () => runSearch(350));
 /* ===== Own iOS-style keyboard (system / 3rd-party keyboards are blocked: input is readonly + inputmode none) ===== */
 const KB = $('kbd'); let kRep = 0, kRepT = 0;
-const hideKbd = () => { KB.classList.remove('on'); q.blur(); };
-const openKbd = () => { if (KB.classList.contains('on')) return; KB.classList.add('on'); navPush('kbd', hideKbd); };
-const closeKbd = () => { if (!KB.classList.contains('on')) return; KB.classList.remove('on'); navDrop('kbd'); };
-KB.innerHTML = ['1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((r, i) => '<div class="kr">' + [...r].map(c => `<button data-k="${c}">${c}</button>`).join('') + (i === 3 ? `<button class="kw" data-k="bs" aria-label="Delete">${ic('bs')}</button>` : '') + '</div>').join('') +
-  `<div class="kr"><button class="kx" data-k="clr" aria-label="Clear">${ic('x')}</button><button class="ksp" data-k=" ">space</button><button class="kg" data-k="go">Search</button></div>`;
+const qcv = document.createElement('canvas').getContext('2d'), qsw = q.parentNode;
+function moveCaret() { const cs = getComputedStyle(q); qcv.font = cs.font; const w = qcv.measureText(q.value).width, pl = parseFloat(cs.paddingLeft) || 40, pr = parseFloat(cs.paddingRight) || 14;
+  $('qcar').style.left = Math.min(pl + 1 + w, q.clientWidth - pr) + 'px'; }
+const hideKbd = () => { KB.classList.remove('on'); qsw.classList.remove('kon'); q.blur(); };
+const openKbd = () => { if (KB.classList.contains('on')) return; KB.classList.add('on'); qsw.classList.add('kon'); moveCaret(); navPush('kbd', hideKbd); if (!q.value) showRecent(); };
+const closeKbd = () => { if (!KB.classList.contains('on')) return; KB.classList.remove('on'); qsw.classList.remove('kon'); navDrop('kbd'); };
+KB.innerHTML = ['1234567890', 'qwertyuiop', 'asdfghjkl'].map(r => '<div class="kr">' + [...r].map(c => `<button class="k" data-k="${c}">${c}</button>`).join('') + '</div>').join('') +
+  `<div class="kr"><button class="kx" data-k="clr" aria-label="Clear">${ic('x')}</button>` + [...'zxcvbnm'].map(c => `<button class="k" data-k="${c}">${c}</button>`).join('') + `<button class="kw" data-k="bs" aria-label="Delete">${ic('bs')}</button></div>` +
+  `<div class="kr"><button class="ksp" data-k=" ">space</button><button class="kg" data-k="go">Search</button></div>`;
 function kPress(k) {
-  if (k === 'go') { closeKbd(); runSearch(0); return; }
-  q.value = k === 'bs' ? q.value.slice(0, -1) : k === 'clr' ? '' : (q.value + k).slice(0, 40); runSearch(350);
+  if (k === 'go') { const t = q.value.trim(); addSearch(t); closeKbd(); if (t.length > 1) { sq = t; q.value = ''; $('qc').classList.remove('on'); sug.style.display = 'none'; openSearch(); } else runSearch(0); return; }
+  q.value = k === 'bs' ? q.value.slice(0, -1) : k === 'clr' ? '' : (q.value + k).slice(0, 40); moveCaret(); runSearch(450);
 }
 KB.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); b.classList.add('p');
   const k = b.dataset.k; kPress(k); if (k === 'bs') kRepT = setTimeout(() => { kRep = setInterval(() => kPress('bs'), 70); }, 380); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => KB.addEventListener(n, () => { clearTimeout(kRepT); clearInterval(kRep); KB.querySelectorAll('.p').forEach(b => b.classList.remove('p')); }));
 q.addEventListener('focus', openKbd); q.addEventListener('pointerdown', openKbd);
-$('qc').addEventListener('pointerdown', e => { e.preventDefault(); q.value = ''; runSearch(0); openKbd(); });
-sug.addEventListener('click', e => { const c = e.target.closest('[data-p]'); if (!c) return; sug.style.display = 'none'; q.value = ''; $('qc').classList.remove('on'); closeKbd(); q.blur(); openTitle(c.dataset.p, c.dataset.t); });
+$('qc').addEventListener('pointerdown', e => { e.preventDefault(); q.value = ''; moveCaret(); runSearch(0); openKbd(); });
+sug.addEventListener('click', async e => { 
+    const c = e.target.closest('[data-p]'); 
+    if (!c) return; addSearch(q.value); 
+    sug.style.display = 'none'; 
+    q.value = ''; 
+    $('qc').classList.remove('on'); 
+    closeKbd(); 
+    q.blur(); 
+    
+    let path = c.dataset.p;
+    const title = c.dataset.t;
+    
+    // Agar detailPath khali hai, toh resolve API se fetch karein
+    if (!path) {
+        toast('Fetching details...');
+        try {
+            const res = await fetch(`${API}/resolve?title=${encodeURIComponent(title)}`);
+            const data = await res.json();
+            if (data.detailPath) {
+                path = data.detailPath;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    
+    if (path) {
+        openTitle(path, title);
+    } else {
+        toast('Is title ki details nahi milin.');
+    }
+});
+
+function findMovieInHomeData(query) {
+    const homeData = document.getElementById('cats');
+    if (!homeData) return null;
+    const q = query.toLowerCase().trim();
+    
+    // Home page se saare movie cards dhundein
+    const allCards = homeData.querySelectorAll('.mc[data-p]');
+    for (const card of allCards) {
+        const title = (card.dataset.t || '').toLowerCase().trim();
+        if (title === q || title.includes(q) || q.includes(title)) {
+            return { detailPath: card.dataset.p, title: card.dataset.t };
+        }
+    }
+    
+    // Hero banner se bhi check karein
+    if (window.heroItems) {
+        for (const item of window.heroItems) {
+            const s = item.subject || item;
+            if (!s.title) continue;
+            const t = s.title.toLowerCase().trim();
+            if (t === q || t.includes(q) || q.includes(t)) {
+                return { detailPath: s.detailPath, title: s.title };
+            }
+        }
+    }
+    
+    return null;
+}
 document.addEventListener('click', e => { if (!e.target.closest('.sw,#kbd')) { sug.style.display = 'none'; closeKbd(); q.blur(); } });
 
 /* ===== Player state ===== */
 const v = $('v'), player = $('player'), surf = $('surf'), ctl = $('ctl'), menu = $('menu'), epsEl = $('eps');
-const P = {open: false, bg: false, title: '', art: '', tk: 0, eps: [], i: -1, streams: [], q: -1, cur: '', caps: [], audios: [], sub: -1, aud: 0, type: '', sid: '', path: '', blobs: [], onMeta: null};
+const P = {open: false, bg: false, title: '', art: '', tk: 0, eps: [], i: -1, streams: [], q: -1, cur: '', caps: [], audios: [], dubs: [], dsid: '', dpath: '', sub: -1, aud: 0, type: '', sid: '', path: '', blobs: [], onMeta: null};
 const S = {locked: false, drag: false, dragT: 0, ctlOn: true, timer: 0, raf: 0, menu: '', mode: 'fit', z: {s: 1, x: 0, y: 0}, bri: 1, unlT: 0, hudT: 0, sbW: 1};
 const MODES = {fit: ['contain', 'Fit'], fill: ['cover', 'Fill'], stretch: ['fill', 'Stretch'], zoom: ['contain', 'Zoom'], orig: ['scale-down', 'Original'], r169: ['fill', '16:9', 16 / 9], r43: ['fill', '4:3', 4 / 3], r219: ['fill', '21:9', 21 / 9]};
 const SPEEDS = [.25, .5, .75, 1, 1.25, 1.5, 1.75, 2];
@@ -655,7 +867,7 @@ $('bRetry').onclick = () => { if (P.cur) load(P.cur, true); };
 
 /* ===== Loading streams ===== */
 function load(url, keep) {
-  const pos = keep ? v.currentTime : 0, was = keep && v.paused;
+  const pos = keep ? v.currentTime : (P.resume || 0), was = keep && v.paused; if (!keep) P.resume = 0;
   P.cur = url; showErr(''); busy(true);
   if (P.onMeta) v.removeEventListener('loadedmetadata', P.onMeta);
   P.onMeta = () => { if (pos > 0) { try { v.currentTime = pos; } catch (_) {} } if (!was) v.play().catch(() => {}); };
@@ -671,17 +883,19 @@ async function openTitle(path, title) {
     const d = (await (await fetch(`${API}/detail?detailPath=${encodeURIComponent(path)}`)).json()).data;
     if (tk !== P.tk) return;
     if (!d?.subject) throw new Error('Details not available for this title.');
-    P.path = path; P.sid = d.subject.subjectId; P.eps = []; const cu = cov(d.subject); P.title = title || d.subject.title || ''; P.art = cu ? px(cu) : ''; if (cu) ambImg($('pamb'), px(cu));
+    P.path = path; P.sid = d.subject.subjectId; P.eps = []; P.dsid = P.dpath = ''; P.dubs = (d.subject.dubs || []).filter(x => x && x.detailPath && x.subjectId); const cu = cov(d.subject); P.title = title || d.subject.title || ''; P.cover = cu || ''; P.art = cu ? px(cu) : ''; if (cu) ambImg($('pamb'), px(cu));
     (d.resource?.seasons || []).filter(s => s.se > 0).forEach(s => { for (let i = 1; i <= s.maxEp; i++) P.eps.push({se: s.se, ep: i}); });
     P.type = P.eps.length ? '/tv-series/detail' : '/movie/detail';
-    buildEps(); playIdx(P.eps.length ? 0 : -1);
+    buildEps(); const h0 = hist().find(x => x.p === path); let st = P.eps.length ? 0 : -1; P.resume = 0;
+    if (h0) { if (P.eps.length) st = clamp(h0.i, 0, P.eps.length - 1); if (pct(h0) > .95) { if (P.eps.length && st < P.eps.length - 1) st++; } else P.resume = h0.pos || 0; }
+    syncFav(); playIdx(st);
   } catch (e) { if (tk === P.tk) showErr(e.message || 'Could not load details.'), P.cur = ''; }
 }
 async function playIdx(i) {
   const tk = ++P.tk, it = i >= 0 ? P.eps[i] : {se: 0, ep: 0}; if (!it) return;
   P.i = i; markEps(); busy(true); showErr('');
   try {
-    const url = `${API}/play?subjectId=${encodeURIComponent(P.sid)}&se=${it.se}&ep=${it.ep}&detailPath=${encodeURIComponent(P.path)}&type=${encodeURIComponent(P.type)}`;
+    const url = `${API}/play?subjectId=${encodeURIComponent(P.dsid || P.sid)}&se=${it.se}&ep=${it.ep}&detailPath=${encodeURIComponent(P.dpath || P.path)}&type=${encodeURIComponent(P.type)}`;
     const d = (await (await fetch(url)).json()).data;
     if (tk !== P.tk) return;
     if (!d?.streams?.length) throw new Error('Video not available' + (d?.hasResource ? ' (resource has no streams).' : '.'));
@@ -691,7 +905,8 @@ async function playIdx(i) {
   } catch (e) { if (tk === P.tk) { P.cur = ''; showErr(e.message || 'Network error.'); } }
 }
 const qName = s => s.resolutions ? parseInt(s.resolutions) + 'p' : 'Source';
-function qLabel() { $('bQ').textContent = P.q < 0 ? 'Auto' : qName(P.streams[P.q]); }
+function setQC(t) { $('bQ').innerHTML = '<small>Quality</small><b>' + t + '</b>'; }
+function qLabel() { setQC(P.q < 0 ? 'Auto' : qName(P.streams[P.q])); }
 function navState() { const n = P.eps.length; $('bPrev').disabled = !(n && P.i > 0); $('bNext').disabled = !(n && P.i < n - 1); $('bEps').hidden = !n; }
 
 /* ===== Episodes sheet ===== */
@@ -717,28 +932,35 @@ function menuItems(k) {
     return [{t: 'Auto', sub: 'Best available', on: P.q < 0, fn: () => setQ(-1)}, ...P.streams.map((s, i) => ({t: qName(s), on: P.q === i, fn: () => setQ(i)}))];
   }
   if (k === 'a') {
-    const at = v.audioTracks;
-    if (at && at.length > 1) return [...at].map((t, i) => ({t: t.label || t.language || 'Track ' + (i + 1), on: t.enabled, fn: () => { [...at].forEach((x, j) => x.enabled = j === i); P.aud = i; closeMenu(); toast('Audio switched'); }}));
-    if (P.audios.length) return P.audios.map((a, i) => ({t: a.label || a.lang || 'Track ' + (i + 1), on: P.aud === i, fn: () => { P.aud = i; load(a.url, true); closeMenu(); toast('Audio: ' + (a.label || a.lang || i + 1)); }}));
-    return [{t: 'No alternate audio tracks for this video', dis: 1}];
+    const out = [], at = v.audioTracks;
+    if (at && at.length > 1) [...at].forEach((t, i) => out.push({t: t.label || t.language || 'Track ' + (i + 1), on: t.enabled, fn: () => { [...at].forEach((x, j) => x.enabled = j === i); P.aud = i; closeMenu(); toast('Audio switched'); }}));
+    P.audios.forEach((a, i) => out.push({t: a.label || a.lang || 'Track ' + (i + 1), on: P.aud === i, fn: () => { P.aud = i; load(a.url, true); closeMenu(); toast('Audio: ' + (a.label || a.lang || i + 1)); }}));
+    if (P.dubs.length > 1) P.dubs.forEach(d => out.push({t: d.lanName || d.lanCode || 'Dub', on: (P.dsid || P.sid) === d.subjectId, fn: () => switchDub(d)}));
+    return out.length ? out : [{t: 'No alternate audio tracks for this video', dis: 1}];
   }
   if (k === 's') {
     if (!P.caps.length) return [{t: 'No subtitles for this video', dis: 1}];
     return [{t: 'Off', on: P.sub < 0, fn: () => setSub(-1)}, ...P.caps.map((c, i) => ({t: capName(c, i), on: P.sub === i, fn: () => setSub(i)}))];
   }
+  if (k === 'as') return [{head: 'Audio / Dubbing'}, ...menuItems('a'), {head: 'Subtitles'}, ...menuItems('s')];
   if (k === 'sp') return SPEEDS.map(s => ({t: s === 1 ? 'Normal' : s + '×', on: v.playbackRate === s, fn: () => { v.playbackRate = s; closeMenu(); toast('Speed ' + s + '×'); }}));
   if (k === 'r') return [...Object.entries(MODES).map(([m, [, n]]) => ({t: n, on: S.mode === m, fn: () => { setMode(m); closeMenu(); }})), {t: 'Reset zoom', fn: () => { setMode('fit'); closeMenu(); }}];
   return [];
 }
-const MT = {root: 'Settings', q: 'Quality', a: 'Audio / Dubbing', s: 'Subtitles', sp: 'Playback speed', r: 'Screen & zoom'};
+const MT = {root: 'Settings', q: 'Quality', a: 'Audio / Dubbing', as: 'Audio & Subtitles', s: 'Subtitles', sp: 'Playback speed', r: 'Screen & zoom'};
 function renderMenu() {
   menu.textContent = ''; const h = document.createElement('div'); h.className = 'mh'; h.textContent = MT[S.menu] || ''; menu.appendChild(h);
   menuItems(S.menu).forEach(it => {
+    if (it.head) { const hh = document.createElement('div'); hh.className = 'mh'; hh.style.paddingTop = '12px'; hh.textContent = it.head; menu.appendChild(hh); return; }
     const b = document.createElement('button'); b.className = 'mi' + (it.on ? ' a' : ''); b.disabled = !!it.dis;
     b.append(it.t); if (it.sub) { const s = document.createElement('small'); s.textContent = it.sub; b.appendChild(s); }
     if (it.on) b.insertAdjacentHTML('beforeend', '<span style="margin-left:auto">' + ic('check').replace('class="i"', 'class="i" style="width:18px;height:18px"') + '</span>');
     if (it.fn) b.onclick = it.fn; menu.appendChild(b);
   });
+}
+function switchDub(d) {
+  closeMenu(); if ((P.dsid || P.sid) === d.subjectId) return;
+  P.resume = v.currentTime || 0; P.dsid = d.subjectId; P.dpath = d.detailPath; toast('Audio: ' + (d.lanName || d.lanCode || 'Dub')); playIdx(P.i);
 }
 function setQ(i) { P.q = i; qLabel(); const s = P.streams[i < 0 ? 0 : i]; if (s) load(s.url, true); closeMenu(); toast('Quality: ' + (i < 0 ? 'Auto' : qName(P.streams[i]))); }
 const capName = (c, i) => c.lanName || c.label || c.lang || c.lan || 'Subtitle ' + (i + 1);
@@ -771,9 +993,25 @@ function hud(icon, f, text) {
 }
 let iosNote = false;
 function stepH(f) { const k = Math.round(f * 10); if (S.hs === undefined) { S.hs = k; return; } if (k !== S.hs) { S.hs = k; H.tick(); } }
+let AC = null, GN = null, ivol = 1;
+const iosVolOff = () => { try { return localStorage.getItem('pk_iosvol') === '0'; } catch (_) { return false; } };
+const curVol = () => (IOS && !iosVolOff()) ? ivol : v.volume;
+function iosAudio() {   // iPhone/iPad: <video>.volume cannot be set, so the audio is routed through a gain node (needs a touch/click to start)
+  if (GN) return true; if (!IOS || iosVolOff()) return false;
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return false;
+    AC = new C(); const src = AC.createMediaElementSource(v); GN = AC.createGain(); GN.gain.value = ivol; src.connect(GN); GN.connect(AC.destination); AC.resume().catch(() => {}); return true;
+  } catch (_) { GN = AC = null; return false; }
+}
 function setVol(f) {
-  f = clamp(f, 0, 1); stepH(f); v.volume = f; if (f > 0) v.muted = false;
-  if (IOS && v.volume !== f) { if (!iosNote) { iosNote = true; toast('iOS: use the device volume buttons'); } return; }
+  f = clamp(f, 0, 1); stepH(f);
+  if (IOS && !iosVolOff()) {
+    ivol = f; if (GN) { GN.gain.value = f; if (AC.state !== 'running') AC.resume().catch(() => {}); } else S.vpend = 1;
+    if (f > 0) v.muted = false; $('bMute').innerHTML = ic(v.muted || f === 0 ? 'mute' : 'vol');
+  } else {
+    v.volume = f; if (f > 0) v.muted = false;
+    if (IOS && v.volume !== f) { if (!iosNote) { iosNote = true; toast('iOS: use the device volume buttons'); } return; }
+  }
   hud(f === 0 ? 'mute' : 'vol', f, Math.round(f * 100) + '%');
 }
 function setBri(f) { // Video-only brightness filter: web pages cannot change the real screen brightness
@@ -807,7 +1045,7 @@ surf.addEventListener('touchstart', e => {
   if (e.target.closest('.ui')) return;
   if (S.locked) { showUnl(); return; }
   if (e.touches.length >= 2) { const [a, b] = e.touches; T = {m: 'pinch', d0: dist(a, b), s0: S.z.s, x0: S.z.x, y0: S.z.y, c0: mid(a, b)}; return; }
-  const t = e.touches[0]; T = {m: 'p', x: t.clientX, y: t.clientY, vol: v.volume, bri: S.bri};
+  const t = e.touches[0]; T = {m: 'p', x: t.clientX, y: t.clientY, vol: curVol(), bri: S.bri};
 }, {passive: true});
 surf.addEventListener('touchmove', e => {
   if (!T) return;
@@ -819,14 +1057,19 @@ surf.addEventListener('touchmove', e => {
   if (e.touches.length !== 1 || T.m === 'pinch' || T.m === 'x') return;
   const t = e.touches[0], dx = t.clientX - T.x, dy = t.clientY - T.y;
   if (T.m === 'p' && Math.hypot(dx, dy) > CFG.swipePx) T.m = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
-  if (T.m === 'v') { e.preventDefault(); const f = -dy / (surf.clientHeight * .6); T.x < surf.clientWidth / 2 ? setBri(T.bri + f) : setVol(T.vol + f); }
+  if (T.m === 'v') { e.preventDefault(); const f = -dy / (surf.clientHeight * .6); (DEVN() !== 'tv' && T.x < surf.getBoundingClientRect().left + surf.clientWidth / 2) ? setBri(T.bri + f) : setVol(T.vol + f); }
 }, {passive: false});
 surf.addEventListener('touchend', e => {
+  if (IOS) { if (S.vpend) { S.vpend = 0; if (iosAudio()) GN.gain.value = ivol; } else if (AC && AC.state !== 'running') AC.resume().catch(() => {}); }
   if (!T) return;
   if (T.m === 'p') { onTap(T.x); if (e.cancelable) e.preventDefault(); }   // preventDefault stops the duplicate synthetic click
   if (e.touches.length === 0) T = null; else if (T.m === 'pinch') T = {m: 'x'};
 }, {passive: false});
 surf.addEventListener('touchcancel', () => { T = null; });
+player.addEventListener('wheel', e => {   // mouse wheel / trackpad scroll = volume
+  if (!P.open || S.locked || e.target.closest('#menu,#eps')) return;
+  e.preventDefault(); setVol(curVol() - e.deltaY * (e.deltaMode === 1 ? .02 : .0007));
+}, {passive: false});
 surf.addEventListener('click', e => { if (!e.target.closest('.ui') && !S.locked) onTap(e.clientX); }); // mouse / desktop only
 
 /* ===== Buttons ===== */
@@ -839,7 +1082,7 @@ $('bNext').onclick = () => playIdx(P.i + 1);
 $('bMute').onclick = () => { v.muted = !v.muted; showCtl(); };
 $('bQ').onclick = () => openMenu('q');
 $('bA').onclick = () => openMenu('a');
-$('bS').onclick = () => openMenu('s');
+$('bS').onclick = () => openMenu('as');
 $('bSet').onclick = () => openMenu('root');
 $('bAr').onclick = () => openMenu('r');
 $('bEps').onclick = () => { closeMenu(); if (!epsEl.classList.contains('on')) { epsEl.classList.add('on'); navPush('eps', hideEps); } showCtl(); };
@@ -905,16 +1148,17 @@ function openPlayer(title) {
   if (P.bg) { P.bg = false; player.classList.remove('bg'); exitPip(); }
   if (!P.open) navPush('player', hidePlayer);
   P.open = true; player.classList.add('on'); document.body.classList.add('pl');
-  $('ttl').textContent = title || ''; P.bars = null; P.bn = 0; P.streams = []; P.eps = []; P.i = -1; P.cur = ''; P.caps = []; P.audios = [];
-  $('bQ').textContent = 'Auto'; $('bEps').hidden = true; $('bPrev').disabled = $('bNext').disabled = true;
+  $('ttl').textContent = title || ''; P.bars = null; P.bn = 0; P.streams = []; P.eps = []; P.i = -1; P.cur = ''; P.caps = []; P.audios = []; P.dubs = []; P.dsid = P.dpath = '';
+  setQC('Auto'); $('bEps').hidden = true; $('bPrev').disabled = $('bNext').disabled = true;
   S.locked = false; $('unl').classList.remove('on'); closeMenu(); closeEps(); clearTracks(); setMode('fit', true); setBri(1); $('hud').classList.remove('on');
   v.playbackRate = 1; showErr(''); paint(); showCtl(); updBack();
 }
 function hidePlayer() {   // UI teardown. If the video is in Picture-in-Picture it keeps playing (P.bg) so it is still alive on the home screen
   if (!P.open) return;
+  try { savePos(); } catch (_) {}
   const keep = pipActive() && !!v.getAttribute('src');
   P.open = false; clearTimeout(S.timer); clearTimeout(S.hudT); clearTimeout(S.unlT); clearTimeout(tap.timer); cancelAnimationFrame(S.raf); S.raf = 0; S.drag = false;
-  hideMenu(); epsEl.classList.remove('on'); player.classList.remove('on'); if (!sp.classList.contains('on')) document.body.classList.remove('pl'); busy(false); exitFs();
+  hideMenu(); epsEl.classList.remove('on'); player.classList.remove('on'); if (!sp.classList.contains('on') && !$('pg').classList.contains('on')) document.body.classList.remove('pl'); busy(false); exitFs();
   if (keep) { P.bg = true; player.classList.add('bg'); } else { P.tk++; stopVideo(); }
 }
 function closePlayer() { if (!P.open) return; closeMenu(); closeEps(); hidePlayer(); navDrop('player'); }
@@ -941,6 +1185,7 @@ document.addEventListener('keydown', e => {
   if (!P.open || e.target.matches('input')) return;
   if (e.key === ' ') { e.preventDefault(); togglePlay(); showCtl(); }
   else if (e.key === 'ArrowRight') { seekBy(10); showCtl(); } else if (e.key === 'ArrowLeft') { seekBy(-10); showCtl(); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); setVol(curVol() + (e.key === 'ArrowUp' ? 1 : -1) * (DEVN() === 'tv' ? .1 : .05)); }
   else if (e.key === 'Escape' && !fsEl()) closePlayer();
 });
 
@@ -960,28 +1205,30 @@ let sideBtns = [], rowsData = [], clkT = 0, sq = '', sTok = 0, sT = 0;
 const pad2 = n => String(n).padStart(2, '0');
 function tick() { const d = new Date(); $('clk').textContent = (d.getHours() % 12 || 12) + ':' + pad2(d.getMinutes()) + ' ' + (d.getHours() < 12 ? 'AM' : 'PM'); }
 function buildSide(lists) {
-  rowsData = lists.filter(o => o.subjects?.length);
+  rowsData = realCats(lists);
   const b = (k, t, ico, n) => `<button class="sbi" data-k="${k}" style="--i:${n}">${ico}<span>${t}</span></button>`;
-  sl.innerHTML = '<i id="ind"></i>' + b('search', 'Search', ic('search'), 0) + b('home', 'Home', ic('home'), 1) + '<div class="slab">Browse</div>' +
+  sl.innerHTML = '<i id="ind"></i><div id="shb"></div>' + b('search', 'Search', ic('search'), 0) + b('home', 'Home', ic('home'), 1) + b('lib-s', 'Saved', ic('heart'), 2) + b('lib-q', 'Search History', ic('search'), 3) + '<div class="slab">Browse</div>' +
     rowsData.map((o, n) => b('row' + n, esc(o.title), `<i class="dot" style="background:hsl(${n * 47 + 20} 70% 55%)"></i>`, n + 3)).join('');
-  sideBtns = [...sl.querySelectorAll('.sbi')]; setActive('home');
+  sideHist(); decorateCats(); sideBtns = [...sl.querySelectorAll('.sbi')]; if ($('most-trending-container')) addSideTrend(); setActive('home');
 }
 function setActive(k) {
   const el = sideBtns.find(b => b.dataset.k === k), ind = $('ind'); if (!el || !ind) return;
   sideBtns.forEach(b => b.classList.toggle('on', b === el));
   ind.style.height = el.offsetHeight + 'px'; ind.style.transform = `translateY(${el.offsetTop}px)`;
 }
-function openSide() { if (P.open || side.classList.contains('open')) return; side.classList.add('open'); document.body.classList.add('menu'); document.documentElement.classList.add('lk'); tick(); clearInterval(clkT); clkT = setInterval(tick, 30000); requestAnimationFrame(() => setActive(sideBtns.find(b => b.classList.contains('on'))?.dataset.k)); navPush('side', hideSide); }
+function openSide() { if (P.open || side.classList.contains('open')) return; sideHist(); side.classList.add('open'); document.body.classList.add('menu'); document.documentElement.classList.add('lk'); tick(); clearInterval(clkT); clkT = setInterval(tick, 30000); requestAnimationFrame(() => setActive(sideBtns.find(b => b.classList.contains('on'))?.dataset.k)); navPush('side', hideSide); }
 function hideSide() { side.classList.remove('open'); document.body.classList.remove('menu'); document.documentElement.classList.remove('lk'); clearInterval(clkT); }
 function closeSide() { if (!side.classList.contains('open')) return; hideSide(); navDrop('side'); }
 $('scrim').addEventListener('touchmove', e => e.preventDefault(), {passive: false}); $('side').addEventListener('touchmove', e => { if (!sl.contains(e.target) || sl.scrollHeight <= sl.clientHeight) e.preventDefault(); }, {passive: false}); $('mbtn').onclick = openSide; $('scrim').onclick = closeSide;
 sl.addEventListener('click', e => {
+  const mh = e.target.closest('.mh'); if (mh) { closeSide(); setTimeout(() => openTitle(mh.dataset.p, mh.dataset.t), 280); return; }
+  if (e.target.closest('.shh')) { closeSide(); setTimeout(() => openLib('h'), 280); return; }
   const b = e.target.closest('.sbi'); if (!b) return; const k = b.dataset.k; setActive(k);
   setTimeout(() => {
     closeSide();
     if (k === 'search') { openSearch(); return; }
-    closeSearch();
-    if (k === 'home') scrollTo({top: 0, behavior: 'smooth'}); else cats.children[+k.slice(3)]?.scrollIntoView({behavior: 'smooth'});
+    if (k.startsWith('lib-')) { openLib(k.slice(4)); return; }
+    closePg(); closeSearch(); setTimeout(() => goTo(k), 380);
   }, 280);
 });
 let ex = null;   // swipe in from the left edge opens the menu; swipe left on the menu closes it
@@ -992,24 +1239,49 @@ document.addEventListener('touchmove', e => {
 }, {passive: true});
 
 /* Search page: big title, a-z row and Browse row, wired to the existing /search endpoint */
-$('kb').innerHTML = '<button class="w" data-c=" ">space</button>' + [...'abcdefghijklmnopqrstuvwxyz0123456789'].map(c => `<button data-c="${c}">${c}</button>`).join('') + '<button class="w" data-c="\b">delete</button>';
-function browse() { $('sbl').textContent = 'Browse'; sres.innerHTML = (rowsData[0]?.subjects || []).slice(0, 12).map(cardHtml).join(''); }
+$('kb').innerHTML = ['1234567890', 'qwertyuiop', 'asdfghjkl'].map(r => '<div class="kr">' + [...r].map(c => `<button class="k" data-c="${c}">${c}</button>`).join('') + '</div>').join('') +
+  '<div class="kr"><span class="kx"></span>' + [...'zxcvbnm'].map(c => `<button class="k" data-c="${c}">${c}</button>`).join('') + `<button class="kw" data-c="\b" aria-label="Delete">${ic('bs')}</button></div><div class="kr"><button class="ksp" data-c=" ">space</button></div>`;
+function browse() { renderRH(); $('sbl').textContent = 'Browse'; sres.innerHTML = (rowsData[0]?.subjects || []).slice(0, 12).map(cardHtml).join(''); }
 const cardHtml = m => `<div class="mc" data-p="${esc(m.detailPath || m.subjectId)}" data-t="${esc(m.title)}"><img class="po" src="${px(cov(m))}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="" draggable="false"><div class="mt">${esc(m.title)}</div></div>`;
+let sItems = [], sMore = false, sPage = 1, sTab = 'all';
+const sTabs = {all: 'All', series: 'Series', movies: 'Movies', music: 'Music'};
+const sType = m => m.subjectType === 2 ? 'series' : m.subjectType === 1 ? 'movies' : m.subjectType === 6 ? 'music' : 'other';
+const sFilter = k => sItems.filter(m => k === 'all' ? sType(m) !== 'music' : sType(m) === k);
+function renderSR() {
+  const list = sFilter(sTab);
+  $('stabs').hidden = !sItems.length;
+  $('stabs').innerHTML = Object.keys(sTabs).map(k => `<button data-st="${k}" class="${k === sTab ? 'on' : ''}">${sTabs[k]}<i>${sFilter(k).length}</i></button>`).join('');
+  $('sbl').textContent = list.length ? 'Results' : (sMore ? 'Nothing here yet \u2013 tap Load more' : 'No results found');
+  sres.innerHTML = list.map(cardHtml).join('');
+  $('smore').hidden = !sMore; $('smore').textContent = 'Load more';
+}
 function renderQ() {
-  const h = $('sqh'); h.textContent = sq || 'Movies, Shows, Cast, and More'; h.classList.toggle('in', !!sq); clearTimeout(sT);
-  if (sq.trim().length < 2) { sTok++; browse(); return; }
+  clearTimeout(rsT); renderRH(); const h = $('sqh'); h.textContent = sq || 'Movies, Shows, Cast, and More'; h.classList.toggle('in', !!sq); clearTimeout(sT);
+  if (sq.trim().length < 2) { sTok++; sItems = []; sMore = false; $('stabs').hidden = true; $('smore').hidden = true; browse(); return; }
   sT = setTimeout(async () => {
     const tk = ++sTok;
     try {
-      const items = (await (await fetch(`${API}/search?q=${encodeURIComponent(sq.trim())}`)).json()).data?.items || [];
-      if (tk !== sTok) return; $('sbl').textContent = items.length ? 'Results' : 'No results found'; sres.innerHTML = items.map(cardHtml).join('');
+      const d = (await (await fetch(`${API}/search?q=${encodeURIComponent(sq.trim())}`)).json()).data || {};
+      if (tk !== sTok) return;
+      sItems = d.items || []; sMore = !!d.hasMore; sPage = 1; sTab = 'all'; renderSR();
+      if (sItems.length) { const t = sq; rsT = setTimeout(() => addSearch(t), 2500); }
     } catch (e) { if (tk === sTok) $('sbl').textContent = 'Search failed \u2013 check your connection'; }
   }, 300);
 }
+$('stabs').addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (!b) return; sTab = b.dataset.st; renderSR(); });
+$('smore').addEventListener('click', async () => {
+  if (!sMore) return; const tk = sTok, btn = $('smore'); btn.textContent = 'Loading\u2026';
+  try {
+    const d = (await (await fetch(`${API}/search?q=${encodeURIComponent(sq.trim())}&page=${sPage + 1}`)).json()).data || {};
+    if (tk !== sTok) return;
+    const seen = new Set(sItems.map(m => m.detailPath)), add = (d.items || []).filter(m => !seen.has(m.detailPath));
+    sItems = sItems.concat(add); sPage++; sMore = !!d.hasMore && (d.items || []).length > 0; renderSR();
+  } catch (_) { btn.textContent = 'Load more'; }
+});
 $('kb').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const c = b.dataset.c; sq = c === '\b' ? sq.slice(0, -1) : sq + c; renderQ(); });
-sp.addEventListener('click', e => { const c = e.target.closest('.mc'); if (c) openTitle(c.dataset.p, c.dataset.t); });
+sp.addEventListener('click', e => { const c = e.target.closest('.mc'); if (c) { addSearch(sq); openTitle(c.dataset.p, c.dataset.t); } });
 function openSearch() { if (!sp.classList.contains('on')) { sp.classList.add('on'); document.body.classList.add('pl'); navPush('search', hideSearch); } renderQ(); }
-function hideSearch() { sp.classList.remove('on'); if (!P.open) document.body.classList.remove('pl'); }
+function hideSearch() { sp.classList.remove('on'); if (!P.open && !$('pg').classList.contains('on')) document.body.classList.remove('pl'); }
 function closeSearch() { if (!sp.classList.contains('on')) return; hideSearch(); navDrop('search'); }
 $('spx').onclick = () => { closeSearch(); setActive('home'); };
 
@@ -1018,7 +1290,7 @@ function buildDock() { $('dock').innerHTML = heroItems.slice(0, 6).map((it, n) =
 function markDock() { document.querySelectorAll('#dock button').forEach((b, n) => { b.classList.toggle('on', n === heroI); if (n === heroI && lastD !== heroI && b.animate) b.animate([{transform: 'scale(.8)'}], {duration: 380, easing: 'cubic-bezier(.34,1.4,.5,1)'}); }); lastD = heroI; }
 $('dock').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { heroI = +b.dataset.n; setHero(heroI); } });
 document.querySelectorAll('[data-ic]').forEach(e => { if (!e.innerHTML) e.innerHTML = ic(e.dataset.ic); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSide(); if (!P.open) closeSearch(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSide(); if (!P.open) { closeSearch(); closePg(); } } });
 
 /* ===== 3D hero: drag to tilt, swipe to change ===== */
 const hero = document.querySelector('.hero'); let hs = null, hr = 0;
@@ -1034,7 +1306,7 @@ hero.addEventListener('touchend', hend); hero.addEventListener('touchcancel', he
 function setMeta() {
   if (!('mediaSession' in navigator)) return;
   const it = P.eps[P.i], t = (P.title || '') + (it ? ' \u00b7 S' + it.se + 'E' + it.ep : '');
-  try { navigator.mediaSession.metadata = new MediaMetadata({title: t, artist: 'PIKA PICTURE', artwork: P.art ? [{src: P.art, sizes: '512x512'}] : []}); } catch (_) {}
+  try { navigator.mediaSession.metadata = new MediaMetadata({title: t, artist: 'i📽⋆˚࿔WATCH', artwork: P.art ? [{src: P.art, sizes: '512x512'}] : []}); } catch (_) {}
 }
 if ('mediaSession' in navigator) {
   const ms = navigator.mediaSession, set = (a, f) => { try { ms.setActionHandler(a, f); } catch (_) {} };
@@ -1047,6 +1319,253 @@ const DOWN = '.mb,.b,.chip,.pill,.sbi,.eb,.mi,.wn,#dock button,#kbd button,#kb b
 const hk = t => t.matches('#kbd .kg,.wn,#bPlay') ? 'med' : t.matches('#bLock,#unl') ? 'heavy' : t.matches('#kbd button,#kb button') ? 'key' : t.matches('.sbi,.eb,.mi,#dock button') ? 'sel' : 'light';
 document.addEventListener(IOS ? 'click' : 'pointerdown', e => { const t = e.target.closest && e.target.closest(DOWN); if (t && !t.disabled) H[hk(t)](); }, {capture: true, passive: true});
 document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('.mc,.si'); if (t) H.sel(); }, true);   // posters: on tap, not on scroll-start
+
+// --- MOST TRENDING: vertical poster grid, infinite scroll, no duplicates ---
+let trendingPage = 1;
+let isLoadingTrending = false;
+let trendEnd = false;
+const trendSeen = new Set();
+const trendKey = m => m.detailPath || m.subjectId || m.title || '';
+
+function trendEnsure() {
+    let sec = $('most-trending-container');
+    if (sec) return sec;
+    sec = document.createElement('section');
+    sec.className = 'cat';
+    sec.id = 'most-trending-container';
+    sec.innerHTML = '<h2>Most Trending</h2><div class="pgrid" id="trending-row"></div><div id="trend-sent" aria-hidden="true"></div><div id="trend-st" class="tst"></div>';
+    $('cats').appendChild(sec); decorateCats(); addSideTrend();
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) loadTrending(); }, {rootMargin: '900px 0px'}).observe($('trend-sent'));
+    }
+    return sec;
+}
+
+function trendCheck() {
+    const s = $('trend-sent');
+    if (!s || trendEnd || isLoadingTrending) return;
+    if (s.getBoundingClientRect().top < window.innerHeight + 900) setTimeout(loadTrending, 60);
+}
+
+async function loadTrending() {
+    if (isLoadingTrending || trendEnd) return;
+    isLoadingTrending = true;
+    let got = false, ok = false;
+    const st = () => $('trend-st');
+    try {
+        if (st()) st().textContent = 'Loading\u2026';
+        for (let tries = 0; tries < 4; tries++) {
+            const res = await fetch(`${API}/trending?page=${trendingPage}`);
+            const json = await res.json();
+            const d = json.data || {};
+            const items = d.items || d.list || [];
+            ok = true;
+            if (!items.length) { trendEnd = true; break; }
+            trendingPage++;
+            const fresh = items.filter(m => { const k = trendKey(m); if (!k || trendSeen.has(k)) return false; trendSeen.add(k); return true; });
+            if (d.hasMore === false) trendEnd = true;
+            if (!fresh.length) { if (trendEnd) break; continue; }
+            trendEnsure();
+            $('trending-row').insertAdjacentHTML('beforeend', fresh.map(cardHtml).join(''));
+            decorate();
+            got = true;
+            break;
+        }
+        if (ok && !got) trendEnd = true;
+    } catch (e) {
+        console.error("Trending error", e);
+    } finally {
+        isLoadingTrending = false;
+        if (st()) st().textContent = '';
+        if (got) setTimeout(trendCheck, 120);
+    }
+}
+
+window.addEventListener('scroll', trendCheck, {passive: true});
+
+setTimeout(loadTrending, 2000); // Initial load
+
+
+/* ===== v7: watch history / saved / search history / category pages / sidebar jump ===== */
+const LS = {r: k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (_) { return []; } }, w: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }};
+const hist = () => LS.r('pk_hist'), favs = () => LS.r('pk_fav'), shs = () => LS.r('pk_sh');
+const pct = e => e.dur ? clamp(e.pos / e.dur, 0, 1) : 0;
+let rsT = 0, moT = 0, pgMode = null;
+function realCats(lists) {   // only real rows: titled, with real posters, no banner/ads, no duplicates
+  const seen = new Set();
+  return lists.filter(o => { const t = String(o.title || '').trim(), k = t.toLowerCase();
+    if (!t || !Array.isArray(o.subjects) || /^(BANNER|AD|ADS|ADVERT)/i.test(o.type || '') || seen.has(k)) return false;
+    o.subjects = o.subjects.filter(m => m && m.title && (m.detailPath || m.subjectId)); if (o.subjects.length < 2) return false; seen.add(k); return true; });
+}
+function coverOf(el) { const m = (el.querySelector('img')?.getAttribute('src') || '').match(/[?&]url=([^&]+)/); try { return m ? decodeURIComponent(m[1]) : ''; } catch (_) { return ''; } }
+/* watch history (progress) */
+let lastSave = 0;
+function savePos() {
+  if (!P.path || !P.title || !(v.duration > 30) || v.currentTime < 5 || $('busy').classList.contains('on')) return;
+  const it = P.eps[P.i] || {}, e = {p: P.path, t: P.title, c: P.cover || '', i: P.i, se: it.se || 0, ep: it.ep || 0, pos: v.currentTime, dur: v.duration, ts: Date.now()};
+  LS.w('pk_hist', [e, ...hist().filter(x => x.p !== e.p)].slice(0, 60));
+}
+v.addEventListener('timeupdate', () => { if (Date.now() - lastSave > 4000) { lastSave = Date.now(); savePos(); } });
+v.addEventListener('pause', savePos); v.addEventListener('ended', savePos);
+document.addEventListener('visibilitychange', () => { if (document.hidden) savePos(); }); addEventListener('pagehide', savePos);
+/* saved / favourites */
+function toggleFav(e) { let l = favs(); const on = l.some(x => x.p === e.p); l = on ? l.filter(x => x.p !== e.p) : [e, ...l]; LS.w('pk_fav', l); syncFav(); toast(on ? 'Removed from Saved' : 'Saved \u2764'); }
+function syncFav() { const f = new Set(favs().map(x => x.p)); document.querySelectorAll('.fv').forEach(b => b.classList.toggle('on', f.has(b.dataset.fp))); $('bFav').classList.toggle('on', f.has(P.path)); }
+$('bFav').onclick = () => { if (!P.path) return; toggleFav({p: P.path, t: P.title, c: P.cover || ''}); showCtl(); };
+function decorate() { document.querySelectorAll('.mc:not([data-fv])').forEach(c => { c.dataset.fv = 1; if (!c.dataset.p) return; const b = document.createElement('button'); b.className = 'fv'; b.dataset.fp = c.dataset.p; b.setAttribute('aria-label', 'Save'); b.innerHTML = ic('heart'); if (isFav(c.dataset.p)) b.classList.add('on'); c.appendChild(b); }); }
+const isFav = p => favs().some(x => x.p === p);
+const mo = new MutationObserver(() => { cancelAnimationFrame(moT); moT = requestAnimationFrame(decorate); });
+[home, sp, $('pg')].forEach(n => mo.observe(n, {childList: true, subtree: true}));
+document.addEventListener('click', e => {   // capture: save / remove buttons never open the movie
+  const f = e.target.closest('.fv'); if (f) { e.stopPropagation(); e.preventDefault(); const c = f.closest('.mc'); toggleFav({p: c.dataset.p, t: c.dataset.t, c: coverOf(c)}); H.light(); return; }
+  const r = e.target.closest('.rm'); if (r) { e.stopPropagation(); e.preventDefault(); removeItem(r.dataset.rm, r.dataset.id); H.light(); }
+}, true);
+/* search history */
+function addSearch(t) { t = (t || '').trim().toLowerCase(); if (t.length < 2) return; LS.w('pk_sh', [t, ...shs().filter(x => x !== t && !t.startsWith(x))].slice(0, 25)); }
+function showRecent() { const l = shs().slice(0, 8); if (!l.length) { sug.style.display = 'none'; return; }
+  sug.innerHTML = '<div class="rsh"><span>Recent searches</span><button data-rsc="1">Clear all</button></div>' + l.map((t, i) => `<div class="si rs" data-rs="${esc(t)}"><span>${esc(t)}</span><button class="rx" data-rx="${i}" aria-label="Remove">${ic('x')}</button></div>`).join(''); sug.style.display = 'flex'; }
+sug.addEventListener('click', e => {
+  const g = e.target.closest('[data-sg]'); if (g) { e.stopPropagation(); const t = g.dataset.sg; addSearch(t); q.value = ''; $('qc').classList.remove('on'); sug.style.display = 'none'; closeKbd(); q.blur(); sq = t; openSearch(); return; }
+  const x = e.target.closest('[data-rx]'); if (x) { e.stopPropagation(); const l = shs(); l.splice(+x.dataset.rx, 1); LS.w('pk_sh', l); showRecent(); return; }
+  if (e.target.closest('[data-rsc]')) { e.stopPropagation(); LS.w('pk_sh', []); showRecent(); return; }
+  const r = e.target.closest('[data-rs]'); if (r) { e.stopPropagation(); q.value = r.dataset.rs; runSearch(0); }
+});
+function renderRH() { const l = shs().slice(0, 12), h = $('srh'); if (sq.trim() || !l.length) { h.innerHTML = ''; return; }
+  h.innerHTML = '<div class="rhh">Recent searches<button data-rhc="1">Clear all</button></div><div class="rch">' + l.map((t, i) => `<span class="rc" data-t="${esc(t)}">${esc(t)}<button data-rx="${i}" aria-label="Remove">${ic('x')}</button></span>`).join('') + '</div>'; }
+$('srh').addEventListener('click', e => {
+  const x = e.target.closest('[data-rx]'); if (x) { const l = shs(); l.splice(+x.dataset.rx, 1); LS.w('pk_sh', l); renderRH(); return; }
+  if (e.target.closest('[data-rhc]')) { LS.w('pk_sh', []); renderRH(); return; }
+  const c = e.target.closest('.rc'); if (c) { sq = c.dataset.t; renderQ(); }
+});
+/* full pages: category expand + library (history / saved / searches) */
+const pg = $('pg');
+function showPg(t) { $('pgt').textContent = t; if (!pg.classList.contains('on')) { pg.classList.add('on'); document.body.classList.add('pl'); navPush('pg', hidePg); } pg.scrollTop = 0; }
+function hidePg() { pg.classList.remove('on'); pgMode = null; if (!P.open && !sp.classList.contains('on')) document.body.classList.remove('pl'); }
+function closePg() { if (!pg.classList.contains('on')) return; hidePg(); navDrop('pg'); }
+$('pgx').onclick = closePg;
+function renderCat(items, more) { $('pgb').innerHTML = '<div class="pgrid">' + items.map(cardHtml).join('') + '</div>' + (more ? '<button class="more" id="pgm">Load more</button>' : ''); decorate(); }
+function openCat(title, items, more) { pgMode = {kind: 'cat', more}; $('pgtabs').hidden = true; $('pga').hidden = true; showPg(title); renderCat(items, more); }
+async function pgMore() { const m = pgMode?.more; if (!m) return; $('pgm').textContent = 'Loading\u2026'; try { renderCat(await m(), m); } catch (_) { $('pgm').textContent = 'Load more'; } }
+function trendCat() { const mk = () => [...document.querySelectorAll('#trending-row .mc')].map(c => ({detailPath: c.dataset.p, title: c.dataset.t, cover: coverOf(c)})); openCat('Most Trending', mk(), async () => { await loadTrending(); return mk(); }); }
+function libCard(e, tab) { const sub = tab === 'h' && e.se ? `S${e.se}E${e.ep}` : '';
+  return `<div class="mc" data-fv="1" data-p="${esc(e.p)}" data-t="${esc(e.t)}"><div class="pw"><img class="po" src="${px(e.c)}" loading="lazy" referrerpolicy="no-referrer" alt="" draggable="false">${tab === 'h' ? `<i class="pb"><b style="width:${Math.round(pct(e) * 100)}%"></b></i>` : ''}<button class="rm" data-rm="${tab}" data-id="${esc(e.p)}" aria-label="Remove">${ic('x')}</button></div><div class="mt">${esc(e.t)}</div>${sub ? `<div class="ms">${sub}</div>` : ''}</div>`; }
+function openLib(tab) {
+  pgMode = {kind: 'lib', tab}; const T = {h: 'Watch History', s: 'Saved', q: 'Search History'}, L = {h: hist(), s: favs(), q: shs()};
+  $('pgtabs').hidden = false; $('pgtabs').innerHTML = Object.keys(T).map(k => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${T[k]}<i>${L[k].length}</i></button>`).join('');
+  showPg(T[tab]); $('pga').hidden = !L[tab].length; const l = L[tab], b = $('pgb');
+  if (!l.length) b.innerHTML = `<div class="empty">${{h: 'Nothing watched yet.', s: 'Tap the heart on any movie to save it.', q: 'No searches yet.'}[tab]}</div>`;
+  else if (tab === 'q') b.innerHTML = '<div class="qlist">' + l.map((t, i) => `<div class="qi" data-s="${esc(t)}"><span>${ic('search')}${esc(t)}</span><button class="rm" data-rm="q" data-id="${i}" aria-label="Remove">${ic('x')}</button></div>`).join('') + '</div>';
+  else b.innerHTML = '<div class="pgrid">' + l.map(e => libCard(e, tab)).join('') + '</div>';
+}
+function removeItem(k, id) {
+  if (k === 'h') LS.w('pk_hist', hist().filter(x => x.p !== id)); else if (k === 's') LS.w('pk_fav', favs().filter(x => x.p !== id)); else if (k === 'q') { const l = shs(); l.splice(+id, 1); LS.w('pk_sh', l); }
+  syncFav(); if (pgMode?.kind === 'lib') openLib(pgMode.tab);
+}
+pg.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]'); if (t) { openLib(t.dataset.tab); return; }
+  if (e.target.closest('#pga')) { const tab = pgMode?.tab, n = {h: 'watch history', s: 'saved movies', q: 'search history'}[tab]; if (n) pkConfirm('Clear all ' + n + '?', 'This will remove everything in ' + n + '. You can\u2019t undo this.', 'Clear all').then(ok => { if (ok) { LS.w({h: 'pk_hist', s: 'pk_fav', q: 'pk_sh'}[tab], []); syncFav(); openLib(tab); } }); return; }
+  if (e.target.closest('#pgm')) { pgMore(); return; }
+  const s = e.target.closest('[data-s]'); if (s) { const t = s.dataset.s; closePg(); setTimeout(() => { sq = t; openSearch(); }, 320); return; }
+  const c = e.target.closest('.mc'); if (c) openTitle(c.dataset.p, c.dataset.t);
+});
+/* sidebar: history block on top, expand icons, real-category jump */
+function sideHist() { const b = $('shb'); if (!b) return; const l = hist();
+  b.innerHTML = `<div class="shh"><b>Watch History</b><i>${l.length}</i>${ic('chev')}</div>` + (l.length ? '<div class="shr">' + l.slice(0, 12).map(e => `<div class="mh" data-p="${esc(e.p)}" data-t="${esc(e.t)}"><div class="pw"><img class="po" src="${px(e.c)}" loading="lazy" referrerpolicy="no-referrer" alt=""><i class="pb"><b style="width:${Math.round(pct(e) * 100)}%"></b></i></div><span>${esc(e.t)}</span></div>`).join('') + '</div>' : '<div class="shn">Nothing watched yet</div>'); }
+function addSideTrend() { if (sl.querySelector('[data-k="trend"]')) return; const n = sl.querySelectorAll('.sbi').length;
+  sl.insertAdjacentHTML('beforeend', `<button class="sbi" data-k="trend" style="--i:${n}"><i class="dot" style="background:hsl(${n * 47 + 20} 70% 55%)"></i><span>Most Trending</span></button>`); sideBtns = [...sl.querySelectorAll('.sbi')]; }
+function decorateCats() { [...cats.children].forEach((s, n) => { const h = s.querySelector('h2'); if (!h || h.querySelector('.ex')) return;
+  h.insertAdjacentHTML('beforeend', `<button class="ex" data-ci="${s.id === 'most-trending-container' ? 't' : n}" aria-label="Open full page">${ic('expand')}</button>`); }); }
+cats.addEventListener('click', e => { const x = e.target.closest('.ex'); if (!x) return; e.stopPropagation(); const ci = x.dataset.ci;
+  if (ci === 't') trendCat(); else { const r = rowsData[+ci]; if (r) openCat(r.title, r.subjects); } });
+function goTo(k) {
+  if (!P.open && !sp.classList.contains('on') && !pg.classList.contains('on')) document.body.classList.remove('pl');
+  if (k === 'trend') { trendCat(); return; }
+  if (k !== 'home') { const r = rowsData[+k.slice(3)]; if (r && r.subjects) { openCat(r.title, r.subjects); return; } }
+  const el = k === 'home' ? null : cats.children[+k.slice(3)];
+  const y = () => el ? Math.max(0, el.getBoundingClientRect().top + scrollY - 76) : 0;
+  scrollTo({top: y(), behavior: 'smooth'}); setTimeout(() => scrollTo({top: y(), behavior: 'auto'}), 750);   // re-aim once lazy sections have settled
+}
+
+/* ===== Adaptive input: physical keyboard (desktop), TV remote D-pad, row arrows (mouse) ===== */
+const DEVN = () => document.documentElement.dataset.dev;
+let tvEl = null;
+const tvSel = () => {
+  if ($('dlg') && $('dlg').classList.contains('on')) return '#dlg button';
+  if (P.open) return '';
+  if (side.classList.contains('open')) return '#side .sbi,#side .mh,#side .shh';
+  if (KB.classList.contains('on')) return '#kbd button,#sug .si,#sug .rsh button,#qc';
+  if (sp.classList.contains('on')) return '#spx,#sp .mc,#sp .rc,#sp #stabs button,#sp #smore,#sp #kb button,#q,.mb';
+  if ($('pg').classList.contains('on')) return '#pgx,#pga,#pgtabs button,#pg .mc,#pg .more,#pg .qi,#pg .rm';
+  return '.mb,#q,.wn,#dock button,.ex,.mc,.more';
+};
+function tvCands() {
+  const sel = tvSel(); if (!sel) return [];
+  return [...document.querySelectorAll(sel)].filter(el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 4 && r.height > 4 && cs.visibility !== 'hidden' && cs.display !== 'none' && !el.closest('[hidden]'); });
+}
+function tvFocus(el) {
+  if (tvEl) tvEl.classList.remove('tvf'); tvEl = el; if (!el) return;
+  el.classList.add('tvf'); try { el.scrollIntoView({block: 'center', inline: 'center', behavior: 'smooth'}); } catch (_) {}
+}
+function tvMove(dir) {
+  const c = tvCands(); if (!c.length) return false;
+  if (!tvEl || !c.includes(tvEl)) { tvFocus(c.find(x => x.matches('.wn,#kbd button[data-k="g"],#spx')) || c[0]); return true; }
+  const a = tvEl.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2; let best = null, bs = 1e12;
+  c.forEach(el => { if (el === tvEl) return; const r = el.getBoundingClientRect(), dx = r.left + r.width / 2 - ax, dy = r.top + r.height / 2 - ay;
+    const main = dir === 'ArrowRight' ? dx : dir === 'ArrowLeft' ? -dx : dir === 'ArrowDown' ? dy : -dy, cross = (dir === 'ArrowRight' || dir === 'ArrowLeft') ? Math.abs(dy) : Math.abs(dx);
+    if (main < 4) return; const sc = main + cross * 2.5; if (sc < bs) { bs = sc; best = el; } });
+  if (best) tvFocus(best); return true;
+}
+function tvOk() {
+  const el = tvEl; if (!el || !document.contains(el)) return false;
+  if (el.closest('#kbd')) { el.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true})); el.dispatchEvent(new PointerEvent('pointerup', {bubbles: true})); }
+  else if (el.id === 'q') openKbd(); else el.click();
+  return true;
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key, inp = e.target.matches && e.target.matches('input,textarea');
+  if (k === 'GoBack' || k === 'BrowserBack' || k === 'XF86Back' || e.keyCode === 461 || e.keyCode === 10009) { e.preventDefault(); history.back(); return; }
+  if (DEVN() === 'tv' && !inp && !P.open) {
+    if (/^Arrow(Up|Down|Left|Right)$/.test(k)) { if (tvMove(k)) e.preventDefault(); return; }
+    if (k === 'Enter' || k === ' ') { if (tvOk() || tvMove('ArrowDown')) e.preventDefault(); return; }
+  }
+  if (DEVN() === 'tv' && P.open && (k === 'Enter') && !e.target.closest('button')) { togglePlay(); showCtl(); e.preventDefault(); return; }
+  if (inp || P.open || ($('dlg') && $('dlg').classList.contains('on')) || $('pg').classList.contains('on') || side.classList.contains('open')) return;
+  const ch = /^[a-z0-9]$/i.test(k) ? k.toLowerCase() : k === ' ' ? ' ' : null;
+  if (sp.classList.contains('on') && !KB.classList.contains('on')) {   // search page: type straight into the query
+    if (ch) { sq = (sq + ch).slice(0, 40); renderQ(); e.preventDefault(); } else if (k === 'Backspace') { sq = sq.slice(0, -1); renderQ(); e.preventDefault(); }
+    return;
+  }
+  if (!KB.classList.contains('on')) { if (!ch || ch === ' ') return; openKbd(); kPress(ch); e.preventDefault(); return; }
+  if (ch) kPress(ch); else if (k === 'Backspace') kPress('bs'); else if (k === 'Enter') kPress('go'); else return;
+  e.preventDefault();
+});
+if (matchMedia('(hover:hover) and (pointer:fine)').matches) {
+  document.addEventListener('mouseover', e => {
+    const c = e.target.closest && e.target.closest('.cat'); if (!c || c.querySelector('.rnb')) return; const r = c.querySelector('.row'); if (!r) return;
+    const t = r.offsetTop + r.offsetHeight / 2 - 22;
+    c.insertAdjacentHTML('beforeend', `<button class="rnb l" style="top:${t}px" aria-label="Previous">${ic('chev')}</button><button class="rnb r" style="top:${t}px" aria-label="Next">${ic('chev')}</button>`);
+  });
+  document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.rnb'); if (!b) return; e.stopPropagation();
+    const r = b.parentNode.querySelector('.row'); r.scrollBy({left: (b.classList.contains('l') ? -1 : 1) * r.clientWidth * .85, behavior: 'smooth'}); }, true);
+}
+
+/* ===== Themed confirm dialog (replaces the browser's native confirm popup) ===== */
+function pkConfirm(title, msg, okText, danger = true) {
+  return new Promise(res => {
+    let d = $('dlg');
+    if (!d) { d = document.createElement('div'); d.id = 'dlg'; d.setAttribute('role', 'alertdialog'); document.body.appendChild(d); }
+    d.innerHTML = `<div class="dc"><h3>${esc(title)}</h3><p>${esc(msg || '')}</p><div class="db"><button data-d="0">Cancel</button><button class="ok${danger ? '' : ' go'}" data-d="1">${esc(okText || 'OK')}</button></div></div>`;
+    let done = false;
+    const fin = (v, pop) => { if (done) return; done = true; d.classList.remove('on'); removeEventListener('keydown', kd, true); d.onclick = null; if (!pop) navDrop('dlg'); res(v); };
+    const kd = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); e.preventDefault(); fin(false); } else if (e.key === 'Enter' && !(e.target.closest && e.target.closest('#dlg button')) && DEVN() !== 'tv') { e.stopImmediatePropagation(); e.preventDefault(); fin(true); } };
+    d.onclick = e => { const b = e.target.closest('[data-d]'); if (b) fin(b.dataset.d === '1'); else if (e.target === d) fin(false); };
+    addEventListener('keydown', kd, true); d.classList.add('on'); navPush('dlg', () => fin(false, true));
+    if (DEVN() === 'tv') tvFocus(d.querySelector('[data-d="0"]'));
+  });
+}
+
+syncFav();
 
 loadHome();
 })();
