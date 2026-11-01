@@ -342,7 +342,7 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
 .fd.t{top:0;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
 .fd.b{bottom:0;-webkit-mask-image:linear-gradient(transparent,#000);mask-image:linear-gradient(transparent,#000)}
 /* landscape player: pure black bars, no blurry backdrop */
-@media (orientation:landscape) and (pointer:coarse){#pamb{display:none}}
+@media (pointer:fine),(orientation:landscape) and (pointer:coarse){#pamb{display:none}}
 /* video kept alive (for Picture-in-Picture) while the player UI is closed */
 #player.bg{display:block;visibility:hidden;pointer-events:none}
 @media (orientation:landscape) and (max-height:520px){.hero{height:84svh;min-height:230px;padding-bottom:84px}.hc h1{font-size:24px}.hm{margin:6px 0 12px}}
@@ -369,7 +369,7 @@ header{padding-left:calc(var(--l) + 16px);padding-right:calc(var(--rt) + 16px)}
 .rhh{padding:0;margin:14px 0 8px}.rch{display:flex;flex-wrap:wrap;gap:8px}.rc{display:flex;align-items:center;gap:6px;padding:7px 8px 7px 13px;border-radius:18px;background:rgba(255,255,255,.12);font-size:14px}.rc button{display:grid;place-items:center;width:20px;height:20px;opacity:.7}.rc .i,.rx .i{width:13px;height:13px}
 .si.rs{justify-content:space-between}.rx{width:28px;height:28px;display:grid;place-items:center;opacity:.6}
 .shh{display:flex;align-items:center;gap:8px;padding:6px 14px 4px;font-size:15px;font-weight:700}.shh i{font-style:normal;background:#f00;border-radius:10px;padding:0 7px;font-size:12px}.shh .i{margin-left:auto;width:16px;height:16px}
-.shr{display:flex;gap:9px;overflow-x:auto;padding:6px 14px 10px}.mh{flex:0 0 72px}.mh .po{width:72px;height:104px;object-fit:cover;display:block;background:var(--s2)}.mh span{display:block;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shn{padding:4px 14px 10px;font-size:12px;color:#ffffff8c}
+.shr{display:flex;gap:9px;overflow-x:auto;padding:6px 14px 10px}.whc{flex:0 0 72px}.whc .po{width:72px;height:104px;object-fit:cover;display:block;background:var(--s2)}.whc span{display:block;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shn{padding:4px 14px 10px;font-size:12px;color:#ffffff8c}
 .si.sg{gap:14px;padding:13px 14px}.si.sg .i{width:20px;height:20px;color:var(--t2);flex:none}.hl{color:#4a7bff;font-weight:inherit}
 
 /* ===== Adaptive layout: phone / tablet / desktop / TV (auto-detected, see data-dev on <html>) ===== */
@@ -1070,7 +1070,7 @@ player.addEventListener('wheel', e => {   // mouse wheel / trackpad scroll = vol
   if (!P.open || S.locked || e.target.closest('#menu,#eps')) return;
   e.preventDefault(); setVol(curVol() - e.deltaY * (e.deltaMode === 1 ? .02 : .0007));
 }, {passive: false});
-surf.addEventListener('click', e => { if (!e.target.closest('.ui') && !S.locked) onTap(e.clientX); }); // mouse / desktop only
+surf.addEventListener('click', e => { if (e.target.closest('.ui')) return; if (S.locked) { showUnl(); return; } onTap(e.clientX); }); // mouse / desktop only
 
 /* ===== Buttons ===== */
 const togglePlay = () => v.paused ? v.play().catch(() => {}) : v.pause();
@@ -1221,7 +1221,7 @@ function hideSide() { side.classList.remove('open'); document.body.classList.rem
 function closeSide() { if (!side.classList.contains('open')) return; hideSide(); navDrop('side'); }
 $('scrim').addEventListener('touchmove', e => e.preventDefault(), {passive: false}); $('side').addEventListener('touchmove', e => { if (!sl.contains(e.target) || sl.scrollHeight <= sl.clientHeight) e.preventDefault(); }, {passive: false}); $('mbtn').onclick = openSide; $('scrim').onclick = closeSide;
 sl.addEventListener('click', e => {
-  const mh = e.target.closest('.mh'); if (mh) { closeSide(); setTimeout(() => openTitle(mh.dataset.p, mh.dataset.t), 280); return; }
+  const wh = e.target.closest('.whc'); if (wh) { closeSide(); setTimeout(() => openTitle(wh.dataset.p, wh.dataset.t), 280); return; }
   if (e.target.closest('.shh')) { closeSide(); setTimeout(() => openLib('h'), 280); return; }
   const b = e.target.closest('.sbi'); if (!b) return; const k = b.dataset.k; setActive(k);
   setTimeout(() => {
@@ -1232,7 +1232,7 @@ sl.addEventListener('click', e => {
   }, 280);
 });
 let ex = null;   // swipe in from the left edge opens the menu; swipe left on the menu closes it
-document.addEventListener('touchstart', e => { ex = e.touches.length === 1 ? {x: e.touches[0].clientX, edge: e.touches[0].clientX < 22} : null; }, {passive: true});
+document.addEventListener('touchstart', e => { ex = (e.touches.length === 1 && !e.target.closest('.shr')) ? {x: e.touches[0].clientX, edge: e.touches[0].clientX < 22} : null; }, {passive: true});
 document.addEventListener('touchmove', e => {
   if (!ex) return; const dx = e.touches[0].clientX - ex.x;
   if (ex.edge && dx > 50 && !P.open) { ex = null; openSide(); } else if (!ex.edge && dx < -60 && side.classList.contains('open')) { ex = null; closeSide(); }
@@ -1470,7 +1470,7 @@ pg.addEventListener('click', e => {
 });
 /* sidebar: history block on top, expand icons, real-category jump */
 function sideHist() { const b = $('shb'); if (!b) return; const l = hist();
-  b.innerHTML = `<div class="shh"><b>Watch History</b><i>${l.length}</i>${ic('chev')}</div>` + (l.length ? '<div class="shr">' + l.slice(0, 12).map(e => `<div class="mh" data-p="${esc(e.p)}" data-t="${esc(e.t)}"><div class="pw"><img class="po" src="${px(e.c)}" loading="lazy" referrerpolicy="no-referrer" alt=""><i class="pb"><b style="width:${Math.round(pct(e) * 100)}%"></b></i></div><span>${esc(e.t)}</span></div>`).join('') + '</div>' : '<div class="shn">Nothing watched yet</div>'); }
+  b.innerHTML = `<div class="shh"><b>Watch History</b><i>${l.length}</i>${ic('chev')}</div>` + (l.length ? '<div class="shr">' + l.slice(0, 12).map(e => `<div class="whc" data-p="${esc(e.p)}" data-t="${esc(e.t)}"><div class="pw"><img class="po" src="${px(e.c)}" loading="lazy" referrerpolicy="no-referrer" alt=""><i class="pb"><b style="width:${Math.round(pct(e) * 100)}%"></b></i></div><span>${esc(e.t)}</span></div>`).join('') + '</div>' : '<div class="shn">Nothing watched yet</div>'); }
 function addSideTrend() { if (sl.querySelector('[data-k="trend"]')) return; const n = sl.querySelectorAll('.sbi').length;
   sl.insertAdjacentHTML('beforeend', `<button class="sbi" data-k="trend" style="--i:${n}"><i class="dot" style="background:hsl(${n * 47 + 20} 70% 55%)"></i><span>Most Trending</span></button>`); sideBtns = [...sl.querySelectorAll('.sbi')]; }
 function decorateCats() { [...cats.children].forEach((s, n) => { const h = s.querySelector('h2'); if (!h || h.querySelector('.ex')) return;
@@ -1492,7 +1492,7 @@ let tvEl = null;
 const tvSel = () => {
   if ($('dlg') && $('dlg').classList.contains('on')) return '#dlg button';
   if (P.open) return '';
-  if (side.classList.contains('open')) return '#side .sbi,#side .mh,#side .shh';
+  if (side.classList.contains('open')) return '#side .sbi,#side .whc,#side .shh';
   if (KB.classList.contains('on')) return '#kbd button,#sug .si,#sug .rsh button,#qc';
   if (sp.classList.contains('on')) return '#spx,#sp .mc,#sp .rc,#sp #stabs button,#sp #smore,#sp #kb button,#q,.mb';
   if ($('pg').classList.contains('on')) return '#pgx,#pga,#pgtabs button,#pg .mc,#pg .more,#pg .qi,#pg .rm';
