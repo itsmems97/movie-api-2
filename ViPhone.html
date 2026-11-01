@@ -245,6 +245,13 @@ canvas{touch-action:none;display:block}
 .win.anim{will-change:clip-path,transform}
 .win.anim .wf,.win.anim .wf.on{opacity:0;visibility:hidden;transition:none}
 .win.web .body{bottom:var(--sa-b)}
+/* Keep widgets, app grid and dock phone-sized and centered on tablet, desktop and TV so nothing balloons past the visible frame */
+@media (min-width:501px){
+  .home{left:50%;right:auto;width:min(420px,calc(100% - 44px));transform:translateX(-50%)}
+  .home.away{transform:translateX(-50%) scale(.9)}
+  .dockwrap{left:50%;right:auto;width:min(420px,calc(100% - 44px));transform:translateX(-50%)}
+  .dockwrap.away{transform:translateX(-50%) translateY(60px) scale(.9)}
+}
 </style>
 </head>
 <body>
