@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>PIKA PICTURE</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
 <link rel="preload" as="image" href="https://raw.githubusercontent.com/itsmems97/movie-api-2/refs/heads/main/iWatch.png">
 <link rel="preload" as="font" type="font/ttf" crossorigin href="https://raw.githubusercontent.com/itsmems97/itsmems97.github.io/main/VIP.ttf">
 <style>
@@ -571,8 +573,9 @@ function runSearch(delay) {
   qT = setTimeout(async () => {
     const tk = ++qTok;
     try {
-      const res = await fetch(`${API}/search?q=${encodeURIComponent(s)}`); if (!res.ok) throw new Error(res.status);
-      const j = await res.json(), items = j.data?.items || j.data?.subjects || j.data?.list || (Array.isArray(j.data) ? j.data : []);
+      const res = await fetch(`${API}/suggest?q=${encodeURIComponent(s)}`);
+const json = await res.json();
+const items = json.data?.items || json.data?.list || [];
       if (tk !== qTok) return;
       sug.innerHTML = items.length ? items.map(m => `<div class="si" data-p="${esc(m.detailPath || m.subjectId)}" data-t="${esc(m.title)}"><img src="${px(cov(m))}" alt="" referrerpolicy="no-referrer"><span>${esc(m.title)}</span></div>`).join('')
         : '<div class="empty" style="padding:16px">No results found</div>';
@@ -1000,11 +1003,11 @@ function renderQ() {
   if (sq.trim().length < 2) { sTok++; browse(); return; }
   sT = setTimeout(async () => {
     const tk = ++sTok;
-    try {
-      const items = (await (await fetch(`${API}/search?q=${encodeURIComponent(sq.trim())}`)).json()).data?.items || [];
-      if (tk !== sTok) return; $('sbl').textContent = items.length ? 'Results' : 'No results found'; sres.innerHTML = items.map(cardHtml).join('');
-    } catch (e) { if (tk === sTok) $('sbl').textContent = 'Search failed \u2013 check your connection'; }
-  }, 300);
+  try {
+    const items = (await (await fetch(`${API}/suggest?q=${encodeURIComponent(sq.trim())}`)).json()).data?.items || [];
+    if (tk !== sTok) return; $('sbl').textContent = items.length ? 'Results' : 'No results found'; sres.innerHTML = items.map(cardHtml).join('');
+  } catch (e) { if (tk === sTok) $('sbl').textContent = 'Search failed \u2013 check your connection'; }
+}, 300);
 }
 $('kb').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const c = b.dataset.c; sq = c === '\b' ? sq.slice(0, -1) : sq + c; renderQ(); });
 sp.addEventListener('click', e => { const c = e.target.closest('.mc'); if (c) openTitle(c.dataset.p, c.dataset.t); });
@@ -1047,6 +1050,60 @@ const DOWN = '.mb,.b,.chip,.pill,.sbi,.eb,.mi,.wn,#dock button,#kbd button,#kb b
 const hk = t => t.matches('#kbd .kg,.wn,#bPlay') ? 'med' : t.matches('#bLock,#unl') ? 'heavy' : t.matches('#kbd button,#kb button') ? 'key' : t.matches('.sbi,.eb,.mi,#dock button') ? 'sel' : 'light';
 document.addEventListener(IOS ? 'click' : 'pointerdown', e => { const t = e.target.closest && e.target.closest(DOWN); if (t && !t.disabled) H[hk(t)](); }, {capture: true, passive: true});
 document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('.mc,.si'); if (t) H.sel(); }, true);   // posters: on tap, not on scroll-start
+
+// --- MOST TRENDING INFINITE SCROLL ---
+let trendingPage = 1;
+let isLoadingTrending = false;
+
+async function loadTrending() {
+    if (isLoadingTrending) return;
+    isLoadingTrending = true;
+
+    try {
+        const res = await fetch(`${API}/trending?page=${trendingPage}`);
+        const json = await res.json();
+        let items = json.data?.items || json.data?.list || [];
+
+        if (items.length > 0) {
+            if (trendingPage === 1) {
+                const sec = document.createElement('section');
+                sec.className = 'cat';
+                sec.id = 'most-trending-container';
+                sec.innerHTML = `<h2>Most Trending</h2><div class="row" id="trending-row"></div>`;
+                $('cats').appendChild(sec);
+                
+                const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; const r = e.target; io.unobserve(r);
+                  [...r.children].forEach((c, i) => c.style.setProperty('--i', Math.min(i, 8))); r.classList.add('in'); setTimeout(() => r.classList.add('done'), 1300); }), {threshold: .12});
+                io.observe(sec.querySelector('.row'));
+                setTimeout(() => sec.querySelector('.row').classList.add('in'), 100);
+            }
+
+            const row = $('trending-row');
+            items.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'mc';
+                div.dataset.p = m.detailPath || m.subjectId;
+                div.dataset.t = m.title;
+                div.innerHTML = `<img class="po" src="${px(cov(m))}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="" draggable="false"><div class="mt">${esc(m.title)}</div>`;
+                row.appendChild(div);
+            });
+
+            trendingPage++;
+        }
+    } catch (e) {
+        console.error("Trending error", e);
+    } finally {
+        isLoadingTrending = false;
+    }
+}
+
+window.addEventListener('scroll', () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        loadTrending();
+    }
+});
+
+setTimeout(loadTrending, 2000); // Initial load
 
 loadHome();
 })();
