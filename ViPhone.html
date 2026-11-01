@@ -12,7 +12,10 @@
 html,body{height:100%;margin:0}
 body{background:var(--surround);display:grid;place-items:center;font-family:-apple-system,"SF Pro Text","Inter",system-ui,Roboto,sans-serif;color:#fff;overflow:hidden}
 .phone{position:relative;width:min(390px,100%);height:min(844px,100%);overflow:hidden;background:#6b2d86;border-radius:48px;box-shadow:0 0 0 9px #1b1220,0 0 0 11px #4a3a55,0 40px 90px rgba(60,10,80,.45);isolation:isolate;transform:translateZ(0)}
+@media(min-width:600px) and (max-width:1100px){.phone{width:min(744px,100%);height:min(1133px,100%);border-radius:55px}}
+@media(min-width:1100px){.phone{width:min(820px,100%);height:min(1180px,100%);border-radius:60px}}
 @media (max-width:500px){.phone{border-radius:0;box-shadow:none;width:100%;height:100%}}
+@media(min-width:500px) and (max-width:599px){.phone{border-radius:44px}}
 .wall{position:absolute;inset:0;background:linear-gradient(160deg,#f7a07a 0%,#e9559f 38%,#a057d6 72%,#6d3fb5 100%);overflow:hidden}
 .blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.75;animation:drift 18s ease-in-out infinite alternate}
 .b1{width:260px;height:260px;background:#ffd0a8;top:-60px;left:-70px}
