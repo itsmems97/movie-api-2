@@ -222,6 +222,14 @@ canvas{touch-action:none;display:block}
 .island .islandClear:active{background:rgba(255,255,255,.36)}
 .scrim{position:absolute;inset:0;z-index:9998;display:none;touch-action:none}.scrim.on{display:block}
 @keyframes vanish{to{opacity:0;transform:scale(.55) translateY(-10px)}}
+/* ---- performance pass: same animations, far less GPU work ---- */
+*:not(.gl){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.gl{backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5)}
+.rim{box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),0 4px 12px rgba(40,0,60,.35)}
+.win{will-change:auto}
+.win.anim{will-change:clip-path,transform}
+.win.anim .wf,.win.anim .wf.on{opacity:0;visibility:hidden;transition:none}
+.win.web .body{bottom:var(--sa-b)}
 </style>
 </head>
 <body>
@@ -336,6 +344,16 @@ function shutdown(){if(down)return;down=true;const t=$('#toast');if(t)t.classLis
  setTimeout(()=>{if(c.state==='running')playBoot();else if(h&&bootEl.isConnected)h.classList.add('on')},350);
  const un=()=>{c.resume().then(()=>{if(h)h.classList.remove('on');if(bootEl.isConnected)playBoot();['pointerdown','touchstart','keydown'].forEach(e=>removeEventListener(e,un))}).catch(()=>{})};
  ['pointerdown','touchstart','keydown'].forEach(e=>addEventListener(e,un))})();
+/* keep sound alive after app-switch / lock (iPhone suspends WebAudio) */
+['pointerdown','touchend','keydown'].forEach(ev=>addEventListener(ev,()=>{if(actx&&actx.state!=='running')actx.resume().catch(()=>{})},{passive:true}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&actx&&actx.state!=='running')actx.resume().catch(()=>{})});
+/* rotation / resize: rebuild island shape and re-measure icon positions */
+function remeasure(rec){const t=rec.srcTile;if(!t||!t.isConnected)return;const had=home.classList.contains('away');
+ home.style.transition=dw.style.transition='none';home.classList.remove('away');dw.classList.remove('away');void home.offsetWidth;
+ rec.box=measure(t);
+ if(had){home.classList.add('away');dw.classList.add('away');void home.offsetWidth}
+ home.style.transition=dw.style.transition=''}
+let _rsT=0;addEventListener('resize',()=>{clearTimeout(_rsT);_rsT=setTimeout(()=>{renderIsland();if(!busy)winMap.forEach(remeasure)},150)});
 const mag=e=>[...dock.children].forEach(b=>{const r=b.getBoundingClientRect();const d=Math.abs(e.clientX-(r.left+r.width/2));b.style.setProperty('--s',(1+.4*Math.max(0,1-d/105)).toFixed(3))});
 const unmag=()=>[...dock.children].forEach(b=>b.style.setProperty('--s',1));
 dock.addEventListener('pointermove',mag);dock.addEventListener('pointerdown',mag);
@@ -464,7 +482,7 @@ function showWin(a,srcTile,fromIsland){
  
  const rec=getWin(a);rec.srcTile=srcTile;box=fromIsland?islandBox():measure(srcTile);rec.box=box;
  const el=rec.el;
- el.classList.remove('ready','slow');el.classList.add('show');
+ el.classList.remove('ready','slow');el.classList.add('show','anim');
  el.style.zIndex=++zIdx;
  updateIslandVisibility();
  const from=iconClip();
@@ -473,7 +491,7 @@ function showWin(a,srcTile,fromIsland){
  run(el.querySelector('.inner'),[{transform:'scale(.9)'},{transform:'scale(1)'}],560);
  home.classList.add('away');dw.classList.add('away');
  setTimeout(()=>el.classList.add('ready'),200);
- w.onfinish=()=>{anims.forEach(x=>x.cancel());anims=[];busy=false}}
+ w.onfinish=()=>{anims.forEach(x=>x.cancel());anims=[];busy=false;el.classList.remove('anim')}}
 function closeWin(a,toMinimize,fromPopstate = false,after){
  if(cur!==a||busy)return;
  busy=true;playWin(toMinimize);
@@ -488,7 +506,7 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
   const p=phone.getBoundingClientRect(),rr=rim.getBoundingClientRect();
   box={l:(p.width-_iw)/2,t:rr.top-p.top,w:_iw,h:_ih,pw:p.width,ph:p.height,r:_ih/2,island:true};srcTile.style.visibility=''}
  anims.forEach(x=>x.cancel());anims=[];
- el.classList.remove('ready');
+ el.classList.remove('ready');el.classList.add('anim');
  const w=run(el,[{clipPath:fullClip(),transform:'none'},{clipPath:iconClip(),transform:'scale(1)'}],toMinimize?600:520);
  launchAnim(false,a);
  run(el.querySelector('.inner'),[{transform:'scale(1)'},{transform:'scale(.9)'}],520);
@@ -496,7 +514,7 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
  
  w.onfinish=()=>{
    anims.forEach(x=>x.cancel());anims=[];
-   srcTile.style.visibility='';el.classList.remove('show','slow');el.style.cssText='';
+   srcTile.style.visibility='';el.classList.remove('show','slow','anim');el.style.cssText='';
    cur=null;busy=false;updateIslandVisibility();
    
    if(toMinimize){
@@ -612,7 +630,7 @@ function snakeApp(el){
  const spawn=()=>{do{food=[Math.random()*N|0,Math.random()*N|0]}while(sn.some(s=>s[0]===food[0]&&s[1]===food[1]))};
  const reset=()=>{sn=[[8,8],[7,8],[6,8]];dir=nd='R';score=0;over=false;spawn();$('#sc').textContent='Score 0';draw()};
  const draw=()=>{g.clearRect(0,0,320,320);g.fillStyle='#ff7ac0';g.shadowColor='#ff7ac0';g.shadowBlur=14;g.beginPath();g.arc(food[0]*S+10,food[1]*S+10,7,0,7);g.fill();g.shadowBlur=0;
-  sn.forEach((s,i)=>{g.fillStyle=i?'rgba(150,255,200,.85)':'#fff';g.beginPath();g.roundRect(s[0]*S+1.5,s[1]*S+1.5,S-3,S-3,7);g.fill()});
+  sn.forEach((s,i)=>{g.fillStyle=i?'rgba(150,255,200,.85)':'#fff';g.beginPath();if(g.roundRect)g.roundRect(s[0]*S+1.5,s[1]*S+1.5,S-3,S-3,7);else g.rect(s[0]*S+1.5,s[1]*S+1.5,S-3,S-3);g.fill()});
   if(over){g.fillStyle='rgba(30,0,50,.6)';g.fillRect(0,0,320,320);g.fillStyle='#fff';g.font='600 26px system-ui';g.textAlign='center';g.fillText('Game over',160,150);g.font='18px system-ui';g.fillText('Tap to play again',160,182)}};
  const step=()=>{if(over)return;dir=nd;const h=[sn[0][0]+V[dir][0],sn[0][1]+V[dir][1]];
   if(h[0]<0||h[1]<0||h[0]>=N||h[1]>=N||sn.some(s=>s[0]===h[0]&&s[1]===h[1])){over=true;draw();return}
