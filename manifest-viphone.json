@@ -1,0 +1,21 @@
+{
+  "id": "https://itsmems97.github.io/movie-api-2/ViPhone.html",
+  "name": "ViPhone",
+  "short_name": "ViPhone",
+  "description": "Movies, shows, series and dramas in all languages. All in one app, everything free.",
+  "start_url": "https://itsmems97.github.io/movie-api-2/ViPhone.html",
+  "scope": "https://itsmems97.github.io/movie-api-2/",
+  "display": "standalone",
+  "background_color": "#6d3fb5",
+  "theme_color": "#a057d6",
+  "lang": "en",
+  "related_applications": [
+    { "platform": "webapp", "url": "https://itsmems97.github.io/movie-api-2/manifest-viphone.json" }
+  ],
+  "categories": ["entertainment"],
+  "icons": [
+    { "src": "vp-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "vp-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "vp-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

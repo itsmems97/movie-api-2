@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest-viphone.json">
+<link rel="apple-touch-icon" href="vp-icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ViPhone">
 <title>Liquid Glass Phone</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -423,7 +428,7 @@ pushH({ iWatchHome: true }, '', location.pathname);
 let _arm=0;addEventListener('pointerdown',()=>{if(_arm++)return;pushH({iWatchHome:true},'',location.pathname);pushH({iWatchHome:true},'',location.pathname)},{passive:true});
 
 window.addEventListener('popstate', (e) => {
-    if (down) return; if (busy) { pushH({ iWatchHome: true }, '', location.pathname); return; } // Agar animation chal rahi hai toh ignore karo
+    if (window.__vpPopOpen&&window.__vpClose){window.__vpClose();pushH({ iWatchHome: true }, '', location.pathname);return} if (down) return; if (busy) { pushH({ iWatchHome: true }, '', location.pathname); return; } // Agar animation chal rahi hai toh ignore karo
 
     if (cur) {
         // App khuli hai -> Back dabane par MINIMIZE karo (close nahi)
@@ -663,6 +668,113 @@ function tasksApp(el){
  const add=()=>{const v=$('#ti').value.trim();if(!v)return;L.unshift({t:v,d:false});$('#ti').value='';save();render()};
  $('#ta').onclick=add;$('#ti').onkeydown=e=>{if(e.key==='Enter')add()};render();
 }
+</script>
+<style>
+#vpO{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(28,10,48,.30);-webkit-backdrop-filter:blur(20px) saturate(1.5)!important;backdrop-filter:blur(20px) saturate(1.5)!important;animation:vpFade .5s ease both;font-family:-apple-system,"SF Pro Display","SF Pro Text","Inter",system-ui,Roboto,sans-serif}
+#vpO.out{animation:vpFadeOut .38s ease both}
+#vpO .vpCard{position:relative;width:min(350px,100%);max-height:92vh;overflow:hidden;text-align:center;color:#fff;padding:28px 22px 20px;border-radius:40px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(160deg,rgba(255,255,255,.44),rgba(255,255,255,.14));-webkit-backdrop-filter:blur(34px) saturate(1.9)!important;backdrop-filter:blur(34px) saturate(1.9)!important;box-shadow:0 30px 80px rgba(40,0,70,.45),inset 0 1.5px 1px rgba(255,255,255,.75),inset 0 -1px 1px rgba(255,255,255,.25);animation:vpIn .8s cubic-bezier(.2,.9,.25,1.12) both;transform-origin:50% 60%}
+#vpO.out .vpCard{animation:vpOut .38s cubic-bezier(.4,0,.8,.3) both}
+#vpO .vpCard::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.38) 48%,transparent 64%);transform:translateX(-130%);animation:vpSheen 3.4s 1s ease-in-out infinite}
+#vpO .vpIco{display:block;width:78px;height:78px;margin:0 auto 14px;border-radius:22.4%;box-shadow:0 12px 28px rgba(50,0,80,.4),0 0 0 1px rgba(255,255,255,.4);animation:vpIcon .9s .15s cubic-bezier(.2,1.3,.3,1) both}
+#vpO .vpT{margin:0 0 8px;font-size:23px;line-height:1.18;font-weight:700;letter-spacing:-.4px;text-shadow:0 1px 10px rgba(60,0,90,.25)}
+#vpO .vpP{margin:0 0 20px;font-size:15.5px;line-height:1.42;font-weight:500;opacity:.95;text-shadow:0 1px 8px rgba(60,0,90,.2)}
+#vpO .w{display:inline-block;opacity:0;animation:vpW .65s cubic-bezier(.2,.8,.2,1) both}
+#vpO .steps{text-align:left;padding:0;margin:0 0 20px;list-style:none;font-size:15px;line-height:1.4;font-weight:500;animation:vpUp .6s ease both}
+#vpO .steps li{display:flex;gap:10px;align-items:center;margin:0 0 10px}
+#vpO .steps b{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:rgba(255,255,255,.3)}
+#vpO .steps svg{width:18px;height:18px;vertical-align:-4px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#vpO .vpBtns{display:flex;gap:10px;animation:vpUp .7s ease both}
+#vpO .vpB{flex:1;height:54px;border:0;border-radius:27px;display:flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:16.5px;font-weight:650;color:#fff;cursor:pointer;background:rgba(255,255,255,.24);box-shadow:inset 0 1px 1px rgba(255,255,255,.6),inset 0 -1px 1px rgba(255,255,255,.15);transition:transform .18s cubic-bezier(.3,1.5,.5,1),filter .18s;touch-action:manipulation}
+#vpO .vpB.main{background:linear-gradient(135deg,#ff6b9d,#a057d6 70%,#6d6bff);box-shadow:0 8px 22px rgba(160,60,210,.5),inset 0 1px 1px rgba(255,255,255,.55)}
+#vpO .vpB:active{transform:scale(.93);filter:brightness(1.1)}
+#vpO .vpB svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+@keyframes vpFade{from{opacity:0}to{opacity:1}}
+@keyframes vpFadeOut{to{opacity:0}}
+@keyframes vpIn{from{opacity:0;transform:translateY(46px) scale(.84);filter:blur(14px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes vpOut{to{opacity:0;transform:translateY(30px) scale(.9);filter:blur(10px)}}
+@keyframes vpIcon{from{opacity:0;transform:scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes vpW{from{opacity:0;transform:translateY(12px) scale(.95);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes vpUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes vpSheen{0%{transform:translateX(-130%)}55%,100%{transform:translateX(130%)}}
+@media (prefers-reduced-motion:reduce){#vpO .vpCard::before{animation:none}}
+</style>
+<script>
+(function(){
+ var APP_URL='https://itsmems97.github.io/movie-api-2/ViPhone.html';
+ var SHARE_TEXT='Not Spam Link:\nThis App From: +923041891897\niPhone, Android, Tablets,\nTv, Laptop, this One App For All In One\n\nMovies, shows, series, dramas, worldwide content in Hindi, Urdu, English and all languages. All In One, Only In One App. Everything Free!\n\nLink:\n'+APP_URL;
+ var ICON_SHARE='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8.2 6.8 12 3l3.8 3.8"/><path d="M7.5 10H6.2A2.2 2.2 0 0 0 4 12.2v6.6A2.2 2.2 0 0 0 6.2 21h11.6a2.2 2.2 0 0 0 2.2-2.2v-6.6A2.2 2.2 0 0 0 17.8 10h-1.3"/></svg>';
+ var ICON_CANCEL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M8.8 8.8l6.4 6.4M15.2 8.8l-6.4 6.4"/></svg>';
+ var ICON_INSTALL='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7.8 11.2 12 15.4l4.2-4.2"/><path d="M4.5 15.5v2.2A2.3 2.3 0 0 0 6.8 20h10.4a2.3 2.3 0 0 0 2.3-2.3v-2.2"/></svg>';
+ var ICON_CHECK='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M8 12.4l2.7 2.7L16.2 9.6"/></svg>';
+ var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ var dp=null,cur=null;
+ function isInst(){try{return localStorage.getItem('vp_installed')==='1'}catch(e){return false}}
+ function setInst(){try{localStorage.setItem('vp_installed','1')}catch(e){}}
+ function checkRel(cb){var done=false;function f(v){if(!done){done=true;cb(v)}}try{if(navigator.getInstalledRelatedApps){navigator.getInstalledRelatedApps().then(function(a){f(!!(a&&a.length))},function(){f(false)});setTimeout(function(){f(false)},800)}else f(false)}catch(e){f(false)}}
+ function standalone(){try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}catch(e){return false}}
+ addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
+ addEventListener('appinstalled',function(){dp=null;setInst()});
+ if('serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw-viphone.js',{scope:'./ViPhone.html'}).catch(function(){})}catch(e){}}
+
+ function closePop(next){
+  var r=cur;if(!r){if(next)next();return}
+  cur=null;window.__vpPopOpen=false;window.__vpClose=null;
+  r.classList.add('out');
+  setTimeout(function(){if(r.parentNode)r.parentNode.removeChild(r);if(next)setTimeout(next,250)},380);
+ }
+ /* o: {title, body, btns:[{label, svg, main, fn(ctx)}]} ; the last button is also the Back-button action */
+ function popup(o){
+  if(cur&&cur.parentNode)cur.parentNode.removeChild(cur);
+  var n=0;
+  function W(t){return t.split(' ').map(function(w){return '<span class="w" style="animation-delay:'+(450+45*(n++))+'ms">'+w+'</span>'}).join(' ')}
+  var t=W(o.title),b=W(o.body),bd=Math.min(450+45*n+150,2000);
+  var r=document.createElement('div');r.id='vpO';
+  var bh=o.btns.map(function(x){return '<button type="button" class="vpB'+(x.main?' main':'')+'">'+x.svg+'<span>'+x.label+'</span></button>'}).join('');
+  r.innerHTML='<div class="vpCard" role="dialog" aria-modal="true"><img class="vpIco" alt="" src="vp-icon-192.png" onerror="this.style.display=\'none\'"><h2 class="vpT">'+t+'</h2><p class="vpP">'+b+'</p><div class="vpBtns" style="animation-delay:'+bd+'ms">'+bh+'</div></div>';
+  document.body.appendChild(r);cur=r;window.__vpPopOpen=true;
+  var bs=r.querySelectorAll('.vpB'),ctx={root:r,btns:bs,close:closePop,
+   setSteps:function(html){var p=r.querySelector('.vpP');p.outerHTML='<ol class="vpP steps">'+html+'</ol>'}};
+  var busy=false;
+  o.btns.forEach(function(x,i){bs[i].onclick=function(e){e.stopPropagation();if(busy)return;busy=true;var keep=x.fn(ctx);if(keep===true)busy=false}});
+  window.__vpClose=function(){var last=bs[bs.length-1];if(last)last.click()};
+ }
+
+ function showShare(){
+  popup({title:'Share the vibe \uD83D\uDD25',
+   body:'Send this app to your squad. iPhone, Android, tablets, TV, laptop, one app for everything. No cap.',
+   btns:[
+    {label:'Share',svg:ICON_SHARE,main:true,fn:function(c){
+      if(navigator.share){navigator.share({title:'ViPhone',text:SHARE_TEXT}).catch(function(){}).then(function(){c.close()})}
+      else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(SHARE_TEXT).then(function(){c.btns[0].innerHTML=ICON_CHECK+'<span>Copied</span>'}).catch(function(){}).then(function(){setTimeout(function(){c.close()},1200)})}
+      else c.close()}},
+    {label:'Cancel',svg:ICON_CANCEL,fn:function(c){c.close()}}
+   ]});
+ }
+
+ function showInstall(){
+  var shareIco='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8.2 6.8 12 3l3.8 3.8"/><path d="M7.5 10H6.2A2.2 2.2 0 0 0 4 12.2v6.6A2.2 2.2 0 0 0 6.2 21h11.6a2.2 2.2 0 0 0 2.2-2.2v-6.6A2.2 2.2 0 0 0 17.8 10h-1.3"/></svg>';
+  var steps=ios
+   ?'<li><b>1</b><span>Tap the Share button '+shareIco+' in Safari</span></li><li><b>2</b><span>Scroll down and tap Add to Home Screen</span></li><li><b>3</b><span>Tap Add, done!</span></li>'
+   :'<li><b>1</b><span>Tap the 3 dots menu in your browser</span></li><li><b>2</b><span>Tap Install app (or Add to Home screen)</span></li><li><b>3</b><span>Tap Install, done!</span></li>';
+  popup({title:'Install the app \u2728',
+   body:'Go full screen and enjoy a super smooth, fast experience. It feels like a real app.',
+   btns:[
+    {label:'Install',svg:ICON_INSTALL,main:true,fn:function(c){
+      if(dp&&!ios){var p=dp;dp=null;var go=function(){c.close(showShare)};try{p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==='accepted')setInst();go()},go)}catch(e){go()}return}
+      c.setSteps(steps);
+      c.btns[0].innerHTML=ICON_CHECK+'<span>Got it</span>';
+      c.btns[1].style.display='none';
+      c.btns[0].onclick=function(e){e.stopPropagation();setInst();c.close(showShare)};
+    }},
+    {label:'Not now',svg:ICON_CANCEL,fn:function(c){c.close(showShare)}}
+   ]});
+ }
+
+ function start(){if(standalone()){setInst();showShare();return}if(isInst()){showShare();return}checkRel(function(yes){if(yes){setInst();showShare()}else showInstall()})}
+ var tries=0,iv=setInterval(function(){
+  if(!document.getElementById('boot')||++tries>60){clearInterval(iv);setTimeout(start,600)}
+ },250);
+})();
 </script>
 </body>
 </html>
