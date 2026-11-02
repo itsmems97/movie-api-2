@@ -229,7 +229,7 @@ canvas{touch-action:none;display:block}
 @keyframes iconBreath{50%{transform:scale(1.045)}}
 .boot.hide .bootLogo{transform:scale(1.9);opacity:0;filter:blur(10px)}
 .boot.hide .bootGlow,.boot.hide .bootBar{opacity:0;transition:opacity .35s}
-.phone.go .widgets,.phone.go .grid,.phone.go .dock{animation:homeIn 1s cubic-bezier(.2,.8,.2,1) both}
+.phone.go .widgets,.phone.go .grid,.phone.go .dock{animation:none}
 .phone.go .dock{animation-delay:.08s}
 @keyframes homeIn{from{opacity:0;transform:scale(1.07)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.bootGlow,.bootIcon,.bootShine::after,.phone.go .widgets,.phone.go .grid,.phone.go .dock{animation:none!important}.bootGlow{opacity:1}.bootShine{display:none}.boot.hide .bootLogo{transform:none;filter:none}}
@@ -354,8 +354,39 @@ async function boot(){
  DOCK.forEach(id=>{const it=ITEMS.find(x=>x.id===id);const b=document.createElement('button');b.className='dk';b.setAttribute('aria-label',it.n);b.innerHTML=tile(it);b.onclick=()=>openOrRestore(it,b.querySelector('.tile'));dock.appendChild(b)});
  for(let n=APPS.length+1;n<=60;n++){const img=await loadIcon(n);if(!img)break;addGrid(addItem(n,img))}
 }
+/* ---------- iOS 27 unlock animation: the home layer zooms out from far away, from beyond the screen edges ----------
+   icons start very big (so most of them sit outside the screen), fully visible, and shrink slowly into place;
+   centre icons first, outer icons a little later. Dock grows from small at the bottom.
+   Only transform + opacity are animated (blur only on the small icons) so it stays smooth. */
+function homeCascade(delay,mode){
+ try{
+  if(!Element.prototype.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const soft=mode==='close';
+  const S0=soft?1.5:3.4,SW=soft?1.25:1.7,B0=soft?4:8,DUR=soft?520:760,SPAN=soft?80:210,D0=delay||0,EASE='cubic-bezier(.2,.8,.2,1)';
+  const p=phone.getBoundingClientRect(),cx=p.left+p.width/2,cy=p.top+p.height/2;
+  const els=[...document.querySelectorAll('#home .wd,#grid .app')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.bottom>p.top&&r.top<p.bottom&&r.right>p.left&&r.left<p.right}).slice(0,48);
+  const info=els.map(e=>{const r=e.getBoundingClientRect(),vx=r.left+r.width/2-cx,vy=r.top+r.height/2-cy;return{e,vx,vy,d:Math.hypot(vx,vy),w:e.classList.contains('wd')}});
+  const maxD=Math.max(1,...info.map(o=>o.d));
+  /* the grid clips its children, so let the big icons show past its edges while they fly in */
+  const g=document.getElementById('grid'),gOv=g.style.overflowY,free=g.scrollTop===0;
+  if(free)g.style.overflowY='visible';
+  const all=[];let last=0;
+  info.forEach(o=>{
+   const S=o.w?SW:S0,k=S-1,dl=D0+Math.pow(o.d/maxD,.9)*SPAN;
+   last=Math.max(last,dl+DUR);all.push(o.e);
+   o.e.style.willChange=o.w?'transform,opacity':'transform,opacity,filter';
+   const a={transform:'translate('+(o.vx*k)+'px,'+(o.vy*k)+'px) scale('+S+')',opacity:0},z={transform:'translate(0px,0px) scale(1)',opacity:1};
+   if(!o.w){a.filter='blur('+B0+'px)';z.filter='blur(0px)'}
+   o.e.animate([a,{opacity:1,offset:.1},z],{duration:DUR,delay:dl,easing:EASE,fill:'backwards'});
+  });
+  const dk=document.getElementById('dock');
+  if(dk){const dd=D0+(soft?30:140),dr=soft?460:640;all.push(dk);dk.style.willChange='transform,opacity';
+   dk.animate([{transform:'translateY(60px) scale(.45)',opacity:0},{opacity:1,offset:.25},{transform:'translateY(0px) scale(1)',opacity:1}],{duration:dr,delay:dd,easing:EASE,fill:'backwards'});last=Math.max(last,dd+dr)}
+  setTimeout(()=>{all.forEach(e=>{e.style.willChange=''});if(free)g.style.overflowY=gOv},last+120);
+ }catch(err){}
+}
 const bootT0=Date.now(),bootEl=$('#boot');
-boot().finally(()=>{const wait=Math.max(0,2500-(Date.now()-bootT0));setTimeout(()=>{const ph=document.getElementById('phone');ph.classList.add('go');bootEl.classList.add('hide');setTimeout(()=>{bootEl.remove();ph.classList.remove('go')},1100)},wait)});
+boot().finally(()=>{const wait=Math.max(0,2500-(Date.now()-bootT0));setTimeout(()=>{const ph=document.getElementById('phone');ph.classList.add('go');bootEl.classList.add('hide');homeCascade(280);setTimeout(()=>{bootEl.remove();ph.classList.remove('go')},1100)},wait)});
 /* ---------- sound (WebAudio, no files needed) + shutdown ---------- */
 let down=false,actx=null,bus=null,bootPlayed=false;
 function audioInit(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{if(!actx)actx=new AC();
@@ -564,7 +595,7 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
  const w=run(el,[{clipPath:fullClip(),transform:'none'},{clipPath:iconClip(),transform:'scale(1)'}],toMinimize?600:520);
  launchAnim(false,a);
  run(el.querySelector('.inner'),[{transform:'scale(1)'},{transform:'scale(.9)'}],520);
- home.classList.remove('away');dw.classList.remove('away');
+ home.classList.remove('away');dw.classList.remove('away');homeCascade(90,'close');
  
  w.onfinish=()=>{
    anims.forEach(x=>x.cancel());anims=[];
