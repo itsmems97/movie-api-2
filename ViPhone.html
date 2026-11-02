@@ -341,12 +341,11 @@ const genericApp=n=>el=>{el.innerHTML=`<div class="meta" style="text-align:cente
 const ITEMS=[];
 const CFG_ARR=[];
 const URLS={}; /* optional local fallback, e.g. {1:'https://your-backend.com/app1'} */
-const DEFAULT_CFG={"1":{"name":"i📽⋆˚࿔WATCH","url":"https://itsmems97.github.io/movie-api-2/"},"2":{"name":"Pika📽⋆˚࿔Movie","url":"https://itsmems97.github.io/Pika-Movie.html"},"3":{"name":"i☁️Space","url":"https://itsmems97.github.io/TeleSpace/index.html"},"4":{"name":"Pika🛍️Store","url":"https://itsmems97.github.io/index.html"},"5":{"name":"Help💌Support","url":"WhatsApp"},"6":{"name":"Help💌Support","url":"Telegram"}}; /* used only if apps.json cannot be fetched */
-async function loadCfg(){for(const u of [BASE.replace('iPhone/','')+'apps.json',BASE+'apps.json']){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),6000);const r=await fetch(u+'?t='+Date.now(),{cache:'no-store',signal:ac.signal});clearTimeout(tm);if(r.ok){const j=await r.json();if(j&&typeof j==='object')return j}}catch(e){}}return DEFAULT_CFG}
+async function loadCfg(){for(const u of [BASE.replace('iPhone/','')+'apps.json',BASE+'apps.json']){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),6000);const r=await fetch(u+'?t='+Date.now(),{cache:'no-store',signal:ac.signal});clearTimeout(tm);if(r.ok){const j=await r.json();if(j&&typeof j==='object')return j}}catch(e){}}return{}}
 const cfgOf=(c,n)=>(Array.isArray(c)?c[n-1]:(c[n]||c[n+'.png']||c[String(n)]))||{};
 let CFG={};
 function addItem(n,img){const base=APPS[n-1];const c=cfgOf(CFG,n);const it=base?{...base}:{id:'x'+n,n:'App '+n,a:'#ffd0ea',b:'#a77cff',f:genericApp(n)};
- if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];const _k=String(u||'').toLowerCase(),_msg=encodeURIComponent('Hello, ViPhone Team:\n[ Write Problem Here ]');const _WA='https://wa.me/923041891897?text='+_msg,_TG='https://t.me/Owner_Pikazoo?text='+_msg,_isWA=_k==='whatsapp'||/(^|\/\/|\.)(wa\.me|whatsapp\.com)(\/|$)/.test(_k),_isTG=_k==='telegram'||/(^|\/\/|\.)(t\.me|telegram\.(me|org|dog))(\/|$)/.test(_k);if(_isWA)it.link=/^https?:/.test(_k)?u:_WA;else if(_isTG)it.link=/^https?:/.test(_k)?u:_TG;else if(u&&c.external)it.link=u;else if(u)it.url=u;
+ if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];const _k=String(u||'').toLowerCase(),_http=/^https?:\/\//.test(_k),_ext=/(^|\/\/|\.)(wa\.me|whatsapp\.com|t\.me|telegram\.(me|org|dog))(\/|$)/.test(_k);if(_http&&(_ext||c.external))it.link=u;else if(_http)it.url=u;
  it.img=img;if(img){const k=avg(img);if(k){it.a=k[0];it.b=k[1]}}ITEMS[n-1]=it;return it}
 function addGrid(it){const b=document.createElement('button');b.className='app';b.setAttribute('aria-label',it.n);b.innerHTML=tile(it)+`<span></span>`;b.querySelector('span').textContent=it.n;b.onclick=()=>openOrRestore(it,b.querySelector('.tile'));grid.appendChild(b)}
 async function boot(){
