@@ -7,6 +7,11 @@
 <link rel="icon" type="image/png" href="vp-icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="vp-apple-180.png">
 <meta name="theme-color" content="#05030d">
+<script>window.__vpBIP=null;window.__vpOnBIP=null;addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__vpBIP=e;if(window.__vpOnBIP)window.__vpOnBIP(e)});addEventListener("appinstalled",function(){window.__vpBIP=null;try{localStorage.setItem("vp_inst2",String(Date.now()))}catch(e){}})</script>
+<link rel="preconnect" href="https://itsmems97.github.io">
+<link rel="preconnect" href="https://raw.githubusercontent.com">
+<link rel="preconnect" href="https://pika-movie-box.duckdns.org" crossorigin>
+<link rel="dns-prefetch" href="https://pika-movie-box.duckdns.org">
 <meta name="color-scheme" content="dark light">
 <link rel="apple-touch-startup-image" href="vp-splash/vp-splash-1320x2868.png" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
 <link rel="apple-touch-startup-image" href="vp-splash/vp-splash-1206x2622.png" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
@@ -143,6 +148,12 @@ canvas{touch-action:none;display:block}
 .wf{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;opacity:0;transition:opacity .35s;display:block;margin:0;padding:0}
 .wf.on{opacity:1}
 .wload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .35s}
+.wmsg{max-width:80%;min-height:20px;text-align:center;font-size:14px;font-weight:500;line-height:1.35;color:#fff;opacity:.9;text-shadow:0 1px 6px rgba(60,0,80,.4)}
+.wbtns{display:none;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.wload.stall .wbtns,.wload.err .wbtns{display:flex}
+.wbtns button,.wbtns a{font:inherit;font-size:14px;font-weight:600;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.2);padding:9px 16px;border-radius:20px;cursor:pointer;touch-action:manipulation}
+.wbtns button:active,.wbtns a:active{background:rgba(255,255,255,.36)}
+.wload.err img{animation:none;opacity:.7}
 .wload img{width:96px;height:96px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.35);animation:pulse 1.4s ease-in-out infinite}
 .spin{width:26px;height:26px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -330,11 +341,12 @@ const genericApp=n=>el=>{el.innerHTML=`<div class="meta" style="text-align:cente
 const ITEMS=[];
 const CFG_ARR=[];
 const URLS={}; /* optional local fallback, e.g. {1:'https://your-backend.com/app1'} */
-async function loadCfg(){for(const u of [BASE+'apps.json',BASE.replace('iPhone/','')+'apps.json']){try{const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}}return{}}
+const DEFAULT_CFG={"1":{"name":"i📽⋆˚࿔WATCH","url":"https://itsmems97.github.io/movie-api-2/"},"2":{"name":"Pika📽⋆˚࿔Movie","url":"https://itsmems97.github.io/Pika-Movie.html"},"3":{"name":"i☁️Space","url":"https://itsmems97.github.io/TeleSpace/index.html"},"4":{"name":"Pika🛍️Store","url":"https://itsmems97.github.io/index.html"},"5":{"name":"Help💌Support","url":"WhatsApp"},"6":{"name":"Help💌Support","url":"Telegram"}}; /* used only if apps.json cannot be fetched */
+async function loadCfg(){for(const u of [BASE.replace('iPhone/','')+'apps.json',BASE+'apps.json']){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),6000);const r=await fetch(u+'?t='+Date.now(),{cache:'no-store',signal:ac.signal});clearTimeout(tm);if(r.ok){const j=await r.json();if(j&&typeof j==='object')return j}}catch(e){}}return DEFAULT_CFG}
 const cfgOf=(c,n)=>(Array.isArray(c)?c[n-1]:(c[n]||c[n+'.png']||c[String(n)]))||{};
 let CFG={};
 function addItem(n,img){const base=APPS[n-1];const c=cfgOf(CFG,n);const it=base?{...base}:{id:'x'+n,n:'App '+n,a:'#ffd0ea',b:'#a77cff',f:genericApp(n)};
- if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];const _k=String(u||'').toLowerCase(),_msg=encodeURIComponent('Hello, ViPhone Team:\n[ Write Problem Here ]');if(_k==='whatsapp')it.link='https://wa.me/923041891897?text='+_msg;else if(_k==='telegram')it.link='https://t.me/Owner_Pikazoo?text='+_msg;else if(u)it.url=u;
+ if(LABELS[n])it.n=LABELS[n];if(c.name)it.n=c.name;const u=c.url||URLS[n];const _k=String(u||'').toLowerCase(),_msg=encodeURIComponent('Hello, ViPhone Team:\n[ Write Problem Here ]');const _WA='https://wa.me/923041891897?text='+_msg,_TG='https://t.me/Owner_Pikazoo?text='+_msg,_isWA=_k==='whatsapp'||/(^|\/\/|\.)(wa\.me|whatsapp\.com)(\/|$)/.test(_k),_isTG=_k==='telegram'||/(^|\/\/|\.)(t\.me|telegram\.(me|org|dog))(\/|$)/.test(_k);if(_isWA)it.link=/^https?:/.test(_k)?u:_WA;else if(_isTG)it.link=/^https?:/.test(_k)?u:_TG;else if(u&&c.external)it.link=u;else if(u)it.url=u;
  it.img=img;if(img){const k=avg(img);if(k){it.a=k[0];it.b=k[1]}}ITEMS[n-1]=it;return it}
 function addGrid(it){const b=document.createElement('button');b.className='app';b.setAttribute('aria-label',it.n);b.innerHTML=tile(it)+`<span></span>`;b.querySelector('span').textContent=it.n;b.onclick=()=>openOrRestore(it,b.querySelector('.tile'));grid.appendChild(b)}
 async function boot(){
@@ -570,7 +582,8 @@ function closeWin(a,toMinimize,fromPopstate = false,after){
    if(after)after();
  }
 }
-function openOrRestore(it,tileEl){if(it.link){window.open(it.link,'_blank','noopener');return}showWin(it,tileEl)}
+function openExternal(url){const x=document.createElement('a');x.href=url;x.target='_blank';x.rel='noopener noreferrer';x.style.display='none';document.body.appendChild(x);x.click();setTimeout(()=>x.remove(),500)}
+function openOrRestore(it,tileEl){if(it.link){openExternal(it.link);return}showWin(it,tileEl)}
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&cur)closeWin(cur,false)});
 
 /* ---------- Dynamic Island: only visible on the home screen, parks minimized apps ---------- */
@@ -622,13 +635,36 @@ addEventListener('scroll',function(e){var t=e.target;if(t===document){scrollTo(0
 
 /* ---------- web apps: each icon's backend URL runs full-screen inside its own window ---------- */
 function webAppInto(a,winEl,body){const ob=winEl.querySelector('.wopen');
- body.innerHTML=`<div class="wload"><div class="spin"></div></div><iframe class="wf" allow="geolocation; camera; microphone; clipboard-write; fullscreen; autoplay"></iframe>`;
+ body.innerHTML=`<div class="wload"><div class="spin"></div><div class="wmsg"></div><div class="wbtns"><button type="button" class="wrl">Reload</button><a class="wob" target="_blank" rel="noopener">Open in browser</a></div></div><iframe class="wf" allow="geolocation; camera; microphone; clipboard-write; fullscreen; autoplay"></iframe>`;
  if(a.img){const im=document.createElement('img');im.src=a.img.src;im.alt='';body.querySelector('.wload').prepend(im)}
- const f=body.querySelector('iframe'),ld=body.querySelector('.wload');f.title=a.n;
- f.onload=()=>{f.classList.add('on');ld.style.opacity=0;clearTimeout(t)};
- f.src=a.url;ob.href=a.url;
- const t=setTimeout(()=>winEl.classList.add('slow'),4000);
- return()=>{clearTimeout(t);f.src='about:blank';f.remove();body.innerHTML='';}}
+ const f=body.querySelector('iframe'),ld=body.querySelector('.wload'),msg=ld.querySelector('.wmsg'),sp=ld.querySelector('.spin');f.title=a.n;
+ ld.querySelector('.wob').href=a.url;ob.href=a.url;
+ let same=false;try{same=new URL(a.url,location.href).origin===location.origin}catch(e){}
+ let tries=0,shown=false,dead=false,poll=0,t1=0,t2=0,t3=0;
+ const clr=()=>{clearInterval(poll);clearTimeout(t1);clearTimeout(t2);clearTimeout(t3)};
+ const doc=()=>{try{return f.contentDocument}catch(e){return null}};
+ const bad=d=>{try{return /^(404\b|page not found|site not found|file not found)/i.test((d.title||'').trim())}catch(e){return false}};
+ const reveal=()=>{if(shown||dead)return;shown=true;clr();f.classList.add('on');ld.style.opacity=0;ld.style.pointerEvents='none'};
+ const fail=m=>{if(shown||dead)return;clr();f.classList.remove('on');ld.style.opacity=1;ld.style.pointerEvents='auto';sp.style.display='none';msg.textContent=m;ld.classList.add('err')};
+ /* same-origin apps are shown as soon as their page exists: the window "load" event also waits for every poster / API call and can take minutes on a slow backend */
+ const check=()=>{if(shown||dead)return;const d=doc();if(!d||!d.location||d.location.href==='about:blank'||!d.body)return;
+  if(bad(d)){fail('This app page was not found (404). Check its link in apps.json.');return}
+  if(d.readyState!=='loading'||d.body.childElementCount>1)reveal()};
+ const start=()=>{clr();shown=false;f.classList.remove('on');ld.style.opacity=1;ld.style.pointerEvents='';ld.classList.remove('err','stall');sp.style.display='';msg.textContent='';
+  let u=a.url;if(tries>0){try{const x=new URL(a.url,location.href);x.searchParams.set('_vp',Date.now());u=x.href}catch(e){}}
+  f.src=u;
+  if(same)poll=setInterval(check,150);
+  t1=setTimeout(()=>{if(shown)return;winEl.classList.add('slow');ld.classList.add('stall');msg.textContent='Taking longer than usual…'},4000);
+  if(!same)t3=setTimeout(reveal,6000);  /* cross-origin pages cannot be inspected: show whatever has painted after 6s */
+  t2=setTimeout(()=>{if(shown)return;if(tries<2){tries++;msg.textContent='Connection is slow, retrying…';start()}else fail('Could not load this app. Check your internet and tap Reload.')},16000)};
+ f.onload=()=>{if(dead)return;const d=doc();
+  if(d&&d.location&&d.location.href==='about:blank')return;      /* initial blank frame */
+  if(same&&!d){fail('Could not reach this app. Check your internet and tap Reload.');return}
+  if(d&&bad(d)){fail('This app page was not found (404). Check its link in apps.json.');return}
+  reveal()};
+ ld.querySelector('.wrl').onclick=e=>{e.stopPropagation();tries=1;start()};
+ start();
+ return()=>{dead=true;clr();f.onload=null;f.src='about:blank';f.remove();body.innerHTML='';}}
 
 /* ---------- apps ---------- */
 function calcApp(el){
@@ -736,14 +772,25 @@ function tasksApp(el){
  var ICON_CANCEL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M8.8 8.8l6.4 6.4M15.2 8.8l-6.4 6.4"/></svg>';
  var ICON_INSTALL='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7.8 11.2 12 15.4l4.2-4.2"/><path d="M4.5 15.5v2.2A2.3 2.3 0 0 0 6.8 20h10.4a2.3 2.3 0 0 0 2.3-2.3v-2.2"/></svg>';
  var ICON_CHECK='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M8 12.4l2.7 2.7L16.2 9.6"/></svg>';
- var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
- var dp=null,cur=null;
- function isInst(){try{return localStorage.getItem('vp_installed')==='1'}catch(e){return false}}
- function setInst(){try{localStorage.setItem('vp_installed','1')}catch(e){}}
- function checkRel(cb){var done=false;function f(v){if(!done){done=true;cb(v)}}try{if(navigator.getInstalledRelatedApps){navigator.getInstalledRelatedApps().then(function(a){f(!!(a&&a.length))},function(){f(false)});setTimeout(function(){f(false)},800)}else f(false)}catch(e){f(false)}}
- function standalone(){try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}catch(e){return false}}
- addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
- addEventListener('appinstalled',function(){dp=null;setInst()});
+ var UA=navigator.userAgent,
+  ios=/iphone|ipad|ipod/i.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+  android=/Android/i.test(UA),
+  inApp=/FBAN|FBAV|FB_IAB|Instagram|Snapchat|TikTok|MicroMessenger|Line\/|GSA\/|; wv\)/i.test(UA),
+  isFF=/Firefox|FxiOS/i.test(UA),
+  isSamsung=/SamsungBrowser/i.test(UA),
+  isEdge=/Edg(A|iOS|e)?\//i.test(UA),
+  macSafari=/Macintosh/i.test(UA)&&!ios&&/Safari/i.test(UA)&&!/Chrome|Chromium|Edg|OPR|Firefox/i.test(UA);
+ var cur=null;
+ /* "installed" memory: ONLY a timestamp written by the appinstalled event or by running standalone. The old permanent flag ('1') is deleted, it survived uninstalling and blocked the popup forever. */
+ try{if(localStorage.getItem('vp_installed'))localStorage.removeItem('vp_installed')}catch(e){}
+ function isInst(){try{var t=+localStorage.getItem('vp_inst2');return !!t&&Date.now()-t<14*864e5}catch(e){return false}}
+ function setInst(){try{localStorage.setItem('vp_inst2',String(Date.now()))}catch(e){}}
+ function clearInst(){try{localStorage.removeItem('vp_inst2')}catch(e){}}
+ /* cb(true)=installed, cb(false)=not installed, cb(null)=this browser cannot tell */
+ function checkRel(cb){var done=false;function f(v){if(!done){done=true;cb(v)}}try{if(navigator.getInstalledRelatedApps){navigator.getInstalledRelatedApps().then(function(a){f(!!(a&&a.length))},function(){f(null)});setTimeout(function(){f(null)},1500)}else f(null)}catch(e){f(null)}}
+ function standalone(){try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: minimal-ui)').matches||navigator.standalone===true}catch(e){return false}}
+ /* resolves with the browser's own install event (Chrome/Edge/Samsung/Opera on Android + desktop) or null after ms. This event only fires when the app is NOT installed. */
+ function waitBIP(ms,cb){if(window.__vpBIP){cb(window.__vpBIP);return}var d=false,t=setTimeout(function(){if(!d){d=true;window.__vpOnBIP=null;cb(null)}},ms);window.__vpOnBIP=function(e){if(!d){d=true;clearTimeout(t);cb(e)}}}
  if('serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw-viphone.js',{scope:'./ViPhone.html'}).catch(function(){})}catch(e){}}
 
  function closePop(next){
@@ -760,10 +807,11 @@ function tasksApp(el){
   var t=W(o.title),b=W(o.body),bd=Math.min(450+45*n+150,2000);
   var r=document.createElement('div');r.id='vpO';
   var bh=o.btns.map(function(x){return '<button type="button" class="vpB'+(x.main?' main':'')+'">'+x.svg+'<span>'+x.label+'</span></button>'}).join('');
-  r.innerHTML='<div class="vpCard" role="dialog" aria-modal="true"><img class="vpIco" alt="" src="vp-icon-192.png" onerror="this.style.display=\'none\'"><h2 class="vpT">'+t+'</h2><p class="vpP">'+b+'</p><div class="vpBtns" style="animation-delay:'+bd+'ms">'+bh+'</div></div>';
+  r.innerHTML='<div class="vpCard" role="dialog" aria-modal="true"><img class="vpIco" alt="" src="vp-icon-512.png" onerror="this.style.display=\'none\'"><h2 class="vpT">'+t+'</h2><p class="vpP">'+b+'</p><div class="vpBtns" style="animation-delay:'+bd+'ms">'+bh+'</div></div>';
   document.body.appendChild(r);cur=r;window.__vpPopOpen=true;
   var bs=r.querySelectorAll('.vpB'),ctx={root:r,btns:bs,close:closePop,
    setSteps:function(html){var p=r.querySelector('.vpP');p.outerHTML='<ol class="vpP steps">'+html+'</ol>'}};
+  if(o.steps)ctx.setSteps(o.steps);
   var busy=false;
   o.btns.forEach(function(x,i){bs[i].onclick=function(e){e.stopPropagation();if(busy)return;busy=true;var keep=x.fn(ctx);if(keep===true)busy=false}});
   window.__vpClose=function(){var last=bs[bs.length-1];if(last)last.click()};
@@ -781,26 +829,60 @@ function tasksApp(el){
    ]});
  }
 
+ function stepsHtml(arr){return arr.map(function(t,i){return '<li><b>'+(i+1)+'</b><span>'+t+'</span></li>'}).join('')}
+ function guideSteps(){
+  var sh='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8.2 6.8 12 3l3.8 3.8"/><path d="M7.5 10H6.2A2.2 2.2 0 0 0 4 12.2v6.6A2.2 2.2 0 0 0 6.2 21h11.6a2.2 2.2 0 0 0 2.2-2.2v-6.6A2.2 2.2 0 0 0 17.8 10h-1.3"/></svg>';
+  if(inApp)return ['Open the menu of this in-app browser and tap Open in browser (Chrome or Safari)','Then tap Install again on this page'];
+  if(ios)return ['Tap the Share button '+sh+' (Safari: bottom bar, Chrome: top right)','Scroll down and tap Add to Home Screen','Tap Add, done!'];
+  if(macSafari)return ['In the Safari menu bar tap File, or the Share button '+sh,'Tap Add to Dock','Tap Add, done!'];
+  if(isFF&&android)return ['Tap the 3 dots menu in Firefox','Tap Install','Tap Add, done!'];
+  if(isSamsung)return ['Tap the menu (3 lines) in Samsung Internet','Tap Add page to, then Home screen','Tap Add, done!'];
+  if(android&&isEdge)return ['Tap the menu (3 lines) at the bottom of Edge','Tap Add to phone','Tap Install, done!'];
+  if(android)return ['Tap the 3 dots menu in your browser','Tap Install app (or Add to Home screen)','Tap Install, done!'];
+  if(isEdge)return ['Click the install icon at the right end of the address bar, or the 3 dots menu, then Apps','Click Install this site as an app','Click Install, done!'];
+  return ['Click the install icon at the right end of the address bar, or the 3 dots menu, then Cast, save and share','Click Install page as app','Click Install, done!'];
+ }
  function showInstall(){
-  var shareIco='<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8.2 6.8 12 3l3.8 3.8"/><path d="M7.5 10H6.2A2.2 2.2 0 0 0 4 12.2v6.6A2.2 2.2 0 0 0 6.2 21h11.6a2.2 2.2 0 0 0 2.2-2.2v-6.6A2.2 2.2 0 0 0 17.8 10h-1.3"/></svg>';
-  var steps=ios
-   ?'<li><b>1</b><span>Tap the Share button '+shareIco+' in Safari</span></li><li><b>2</b><span>Scroll down and tap Add to Home Screen</span></li><li><b>3</b><span>Tap Add, done!</span></li>'
-   :'<li><b>1</b><span>Tap the 3 dots menu in your browser</span></li><li><b>2</b><span>Tap Install app (or Add to Home screen)</span></li><li><b>3</b><span>Tap Install, done!</span></li>';
-  popup({title:'Install the app \u2728',
+  var native=!!(window.__vpBIP&&!ios);
+  if(!native){   /* this browser/device has no one-tap install: show the guide straight away */
+   popup({title:'Install the app ✨',body:'Add it to your device',steps:stepsHtml(guideSteps()),
+    btns:[{label:'Got it',svg:ICON_CHECK,main:true,fn:function(c){c.close(showShare)}},
+          {label:'Not now',svg:ICON_CANCEL,fn:function(c){c.close(showShare)}}]});
+   return;
+  }
+  popup({title:'Install the app ✨',
    body:'Go full screen and enjoy a super smooth, fast experience. It feels like a real app.',
    btns:[
     {label:'Install',svg:ICON_INSTALL,main:true,fn:function(c){
-      if(dp&&!ios){var p=dp;dp=null;var go=function(){c.close(showShare)};try{p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==='accepted')setInst();go()},go)}catch(e){go()}return}
-      c.setSteps(steps);
-      c.btns[0].innerHTML=ICON_CHECK+'<span>Got it</span>';
-      c.btns[1].style.display='none';
-      c.btns[0].onclick=function(e){e.stopPropagation();setInst();c.close(showShare)};
+      var p=window.__vpBIP;
+      if(p){window.__vpBIP=null;var go=function(){c.close(showShare)};
+        try{p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==='accepted')setInst();go()},go)}catch(e){go()}return}
+      /* native prompt no longer available (already used / dismissed): fall back to the guide */
+      c.setSteps(stepsHtml(guideSteps()));c.btns[0].innerHTML=ICON_CHECK+'<span>Got it</span>';c.btns[1].style.display='none';
+      c.btns[0].onclick=function(e){e.stopPropagation();c.close(showShare)};
     }},
     {label:'Not now',svg:ICON_CANCEL,fn:function(c){c.close(showShare)}}
    ]});
  }
 
- function start(){if(standalone()){setInst();showShare();return}if(isInst()){showShare();return}checkRel(function(yes){if(yes){setInst();showShare()}else showInstall()})}
+ /* Decide what to show after the boot animation:
+    - running as an installed app          -> never the install popup, only Share
+    - browser fired its install event       -> NOT installed (Chrome only fires it then): native one-tap install popup
+    - browser can report related apps       -> trust it (installed: Share only, not installed: install popup/guide)
+    - browser cannot tell (iPhone, Safari, Firefox...) -> iPhone/Safari always show the guide, others use the install timestamp */
+ function start(){
+  if(standalone()){setInst();showShare();return}
+  if(ios||macSafari){showInstall();return}
+  if(isFF&&!android){showShare();return}          /* desktop Firefox cannot install web apps */
+  waitBIP(2500,function(ev){
+   if(ev){clearInst();showInstall();return}
+   checkRel(function(r){
+    if(r===true){setInst();showShare();return}
+    if(r===false){clearInst();showInstall();return}
+    if(isInst())showShare();else showInstall();
+   });
+  });
+ }
  var tries=0,iv=setInterval(function(){
   if(!document.getElementById('boot')||++tries>60){clearInterval(iv);setTimeout(start,600)}
  },250);
